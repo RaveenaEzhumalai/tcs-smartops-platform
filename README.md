@@ -223,4 +223,4 @@ MIT License — Free to use, modify, and deploy.
 
 ---
 
-*Built to solve real enterprise IT operations challenges using Agentic AI.*
+*Built with ❤️ to solve real TCS enterprise operational challenges.*
