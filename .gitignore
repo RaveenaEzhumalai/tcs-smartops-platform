@@ -1,0 +1,60 @@
+# ═══════════════════════════════════════════════
+#  TCS SmartOps Platform — .gitignore
+#  These files will NOT be uploaded to GitHub
+# ═══════════════════════════════════════════════
+
+# Python Virtual Environments — very large, not needed
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Secret file — NEVER upload this, contains your SECRET_KEY
+.env
+*.env
+.env.local
+.env.production
+
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Node (if added later)
+node_modules/
+npm-debug.log*
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Temp
+*.tmp
+*.temp

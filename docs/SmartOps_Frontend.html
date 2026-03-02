@@ -1,0 +1,2551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TCS SmartOps Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════════ */
+:root {
+  --ink:      #040c18;
+  --surface:  #071220;
+  --panel:    #0b1929;
+  --panel2:   #0f2035;
+  --border:   rgba(0,180,255,0.10);
+  --border2:  rgba(0,180,255,0.20);
+  --accent:   #00b4ff;
+  --accent2:  #00ffa3;
+  --accent3:  #ff6b35;
+  --warn:     #ffb020;
+  --danger:   #ff3d5a;
+  --purple:   #a855f7;
+  --muted:    #3a5570;
+  --text:     #c0d8f0;
+  --text2:    #6a90b0;
+  --glow-a:   rgba(0,180,255,0.15);
+  --glow-g:   rgba(0,255,163,0.15);
+  --radius:   10px;
+  --radius-lg:16px;
+}
+
+/* ── Reset & Base ── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Instrument Sans',sans-serif;
+  background:var(--ink);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ── Grid background ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,180,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,180,255,0.025) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,180,255,0.2);border-radius:2px;}
+
+/* ═══════════════════════════════════════════════════
+   LOGIN PAGE
+═══════════════════════════════════════════════════ */
+#loginPage{
+  position:fixed;inset:0;z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ink);
+}
+#loginPage::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(0,180,255,0.07) 0%,transparent 70%);
+}
+
+.login-card{
+  position:relative;z-index:1;
+  background:var(--panel);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:48px 40px;
+  width:420px;
+  box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 60px rgba(0,180,255,0.08);
+}
+
+.login-logo{
+  text-align:center;margin-bottom:32px;
+}
+.login-logo-icon{
+  width:56px;height:56px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#000;
+  box-shadow:0 0 30px rgba(0,180,255,0.4);
+  margin-bottom:16px;
+}
+.login-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.login-sub{font-size:13px;color:var(--text2);margin-top:4px;}
+
+.form-group{margin-bottom:18px;}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;letter-spacing:0.5px;margin-bottom:6px;display:block;}
+.form-input{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  color:#fff;font-size:14px;
+  transition:all 0.2s;outline:none;
+}
+.form-input:focus{border-color:var(--accent);background:rgba(0,180,255,0.06);box-shadow:0 0 0 3px rgba(0,180,255,0.1);}
+.form-input::placeholder{color:var(--muted);}
+
+.login-hint{
+  margin-bottom:20px;padding:10px 14px;
+  background:rgba(0,255,163,0.06);border:1px solid rgba(0,255,163,0.15);
+  border-radius:8px;font-size:12px;color:var(--text2);font-family:'JetBrains Mono',monospace;
+}
+.login-hint span{color:var(--accent2);}
+
+.btn-login{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,var(--accent),#007acc);
+  border:none;border-radius:var(--radius);
+  color:#000;font-size:14px;font-weight:700;
+  letter-spacing:0.3px;transition:all 0.2s;
+  box-shadow:0 4px 20px rgba(0,180,255,0.3);
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,180,255,0.45);}
+.btn-login:active{transform:translateY(0);}
+.btn-login:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+.login-error{
+  padding:10px 14px;margin-top:14px;
+  background:rgba(255,61,90,0.1);border:1px solid rgba(255,61,90,0.25);
+  border-radius:8px;font-size:13px;color:var(--danger);display:none;
+}
+
+/* ═══════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════ */
+#appShell{display:none;position:relative;z-index:1;min-height:100vh;}
+
+/* ── Top Navigation ── */
+.nav{
+  position:sticky;top:0;z-index:200;height:62px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  background:rgba(4,12,24,0.92);
+  backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{
+  width:34px;height:34px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#000;
+  box-shadow:0 0 16px rgba(0,180,255,0.35);
+  animation:logoPulse 4s ease-in-out infinite;
+}
+@keyframes logoPulse{
+  0%,100%{box-shadow:0 0 16px rgba(0,180,255,0.35);}
+  50%{box-shadow:0 0 28px rgba(0,255,163,0.45);}
+}
+.nav-brand-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;}
+.nav-brand-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent);letter-spacing:2px;text-transform:uppercase;}
+
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{
+  padding:6px 14px;border-radius:6px;
+  border:none;background:transparent;
+  font-size:13px;font-weight:500;color:var(--text2);
+  transition:all 0.18s;position:relative;
+}
+.nav-tab:hover{color:var(--accent);background:rgba(0,180,255,0.06);}
+.nav-tab.active{color:var(--accent);background:rgba(0,180,255,0.10);border:1px solid var(--border);}
+.nav-tab .tab-badge{
+  position:absolute;top:2px;right:2px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--danger);
+  animation:livePulse 1.5s ease-in-out infinite;
+}
+
+.nav-right{display:flex;align-items:center;gap:14px;}
+.ws-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 11px;
+  background:rgba(0,255,163,0.06);
+  border:1px solid rgba(0,255,163,0.15);
+  border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);
+}
+.ws-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);animation:livePulse 1.5s ease-in-out infinite;}
+.ws-badge.disconnected{border-color:rgba(255,61,90,0.25);color:var(--danger);}
+.ws-badge.disconnected .ws-dot{background:var(--danger);}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.75);}}
+
+.nav-user{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 12px 4px 4px;
+  border:1px solid var(--border);border-radius:20px;
+  cursor:pointer;transition:all 0.2s;
+}
+.nav-user:hover{border-color:var(--border2);background:rgba(0,180,255,0.04);}
+.nav-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#000;
+}
+.nav-username{font-size:12px;font-weight:500;color:var(--text);}
+
+/* ── Alert Ticker ── */
+.ticker{
+  height:34px;
+  background:rgba(255,176,32,0.04);
+  border-bottom:1px solid rgba(255,176,32,0.12);
+  display:flex;align-items:center;gap:14px;
+  padding:0 28px;overflow:hidden;
+}
+.ticker-lbl{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--warn);letter-spacing:1.5px;text-transform:uppercase;
+  flex-shrink:0;display:flex;align-items:center;gap:5px;
+}
+.ticker-content{
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--text2);white-space:nowrap;
+  animation:tickerScroll 40s linear infinite;
+}
+@keyframes tickerScroll{0%{transform:translateX(60vw);}100%{transform:translateX(-100%);}}
+
+/* ── Main Layout ── */
+.main{padding:22px 28px;position:relative;z-index:1;}
+
+/* ── Page Header ── */
+.page-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  margin-bottom:20px;
+}
+.page-title{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:#fff;line-height:1.1;}
+.page-subtitle{font-size:13px;color:var(--text2);margin-top:4px;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+
+/* ── Buttons ── */
+.btn{
+  padding:8px 16px;border-radius:var(--radius);
+  border:none;font-size:13px;font-weight:500;
+  transition:all 0.18s;display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#007acc);
+  color:#000;font-weight:600;
+  box-shadow:0 0 16px rgba(0,180,255,0.25);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(0,180,255,0.4);}
+.btn-secondary{
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);color:var(--text);
+}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:rgba(255,61,90,0.15);border:1px solid rgba(255,61,90,0.25);color:var(--danger);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-xs{padding:3px 8px;font-size:11px;border-radius:5px;}
+
+/* ═══════════════════════════════════════════════════
+   KPI CARDS ROW
+═══════════════════════════════════════════════════ */
+.kpi-row{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:14px;margin-bottom:20px;
+}
+.kpi-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:18px;position:relative;overflow:hidden;
+  transition:all 0.25s;cursor:default;
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--kc,var(--accent));
+}
+.kpi-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(0,180,255,0.25);
+  box-shadow:0 8px 32px rgba(0,0,0,0.35);
+}
+.kpi-label{
+  font-size:10px;font-weight:600;color:var(--text2);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;
+}
+.kpi-val{
+  font-family:'Syne',sans-serif;font-size:30px;font-weight:800;
+  color:#fff;line-height:1;
+}
+.kpi-unit{font-size:14px;font-weight:400;color:var(--text2);}
+.kpi-delta{
+  display:inline-flex;align-items:center;gap:4px;
+  margin-top:8px;padding:3px 8px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+}
+.kpi-delta.up{background:rgba(0,255,163,0.08);color:var(--accent2);}
+.kpi-delta.down{background:rgba(255,61,90,0.08);color:var(--danger);}
+.kpi-delta.neutral{background:rgba(255,176,32,0.08);color:var(--warn);}
+
+.kpi-spark{display:flex;align-items:flex-end;gap:2px;height:28px;margin-top:12px;}
+.kpi-spark-bar{
+  flex:1;border-radius:2px 2px 0 0;
+  background:var(--kc,var(--accent));opacity:0.35;
+  transition:opacity 0.2s;
+}
+.kpi-spark-bar:last-child{opacity:1;}
+.kpi-card:hover .kpi-spark-bar{opacity:0.55;}
+.kpi-card:hover .kpi-spark-bar:last-child{opacity:1;}
+
+/* ═══════════════════════════════════════════════════
+   PANEL COMPONENT
+═══════════════════════════════════════════════════ */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+}
+.panel-head{
+  padding:14px 18px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;
+}
+.panel-title{
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;
+  display:flex;align-items:center;gap:7px;
+}
+.panel-icon{
+  width:22px;height:22px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+}
+.panel-body{padding:18px;}
+.panel-body.no-pad{padding:0;}
+.panel-footer{
+  padding:10px 18px;
+  border-top:1px solid var(--border);
+  background:rgba(255,255,255,0.01);
+}
+
+.badge{
+  padding:3px 9px;border-radius:20px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:600;
+  letter-spacing:0.5px;text-transform:uppercase;
+}
+.badge-blue{background:rgba(0,180,255,0.1);color:var(--accent);border:1px solid rgba(0,180,255,0.2);}
+.badge-green{background:rgba(0,255,163,0.1);color:var(--accent2);border:1px solid rgba(0,255,163,0.2);}
+.badge-warn{background:rgba(255,176,32,0.1);color:var(--warn);border:1px solid rgba(255,176,32,0.2);}
+.badge-danger{background:rgba(255,61,90,0.1);color:var(--danger);border:1px solid rgba(255,61,90,0.2);}
+.badge-purple{background:rgba(168,85,247,0.1);color:var(--purple);border:1px solid rgba(168,85,247,0.2);}
+.badge-orange{background:rgba(255,107,53,0.1);color:var(--accent3);border:1px solid rgba(255,107,53,0.2);}
+
+/* ═══════════════════════════════════════════════════
+   GRID LAYOUTS
+═══════════════════════════════════════════════════ */
+.grid-3{display:grid;grid-template-columns:1fr 1fr 340px;gap:14px;margin-bottom:14px;}
+.grid-3r{display:grid;grid-template-columns:340px 1fr 1fr;gap:14px;margin-bottom:14px;}
+.grid-3eq{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+
+/* ═══════════════════════════════════════════════════
+   AGENT LIVE FEED
+═══════════════════════════════════════════════════ */
+.agent-feed{display:flex;flex-direction:column;gap:8px;}
+.agent-event{
+  display:flex;gap:10px;padding:12px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  transition:all 0.2s;
+}
+.agent-event:hover{background:rgba(0,180,255,0.04);border-color:rgba(0,180,255,0.18);}
+.event-dot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+.event-body{flex:1;min-width:0;}
+.event-agent{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--accent);margin-bottom:3px;letter-spacing:0.5px;
+}
+.event-msg{font-size:12px;color:var(--text);line-height:1.45;}
+.event-meta{
+  display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;
+}
+.event-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+.event-impact{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);}
+.event-actions{display:flex;gap:5px;margin-top:7px;}
+.ea-btn{
+  padding:3px 10px;border-radius:4px;border:none;
+  font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;transition:all 0.18s;
+}
+.ea-accept{background:rgba(0,255,163,0.12);color:var(--accent2);}
+.ea-accept:hover{background:rgba(0,255,163,0.22);}
+.ea-dismiss{background:rgba(255,255,255,0.05);color:var(--text2);}
+.ea-dismiss:hover{background:rgba(255,255,255,0.09);}
+.ea-escalate{background:rgba(255,61,90,0.12);color:var(--danger);}
+.ea-escalate:hover{background:rgba(255,61,90,0.22);}
+.event-resolved{opacity:0.45;pointer-events:none;}
+.event-resolved .event-agent::after{content:' · RESOLVED ✓';color:var(--accent2);}
+
+.new-event{animation:eventIn 0.4s ease;}
+@keyframes eventIn{from{opacity:0;transform:translateX(-12px);}to{opacity:1;transform:none;}}
+.highlight-event{animation:highlightPulse 2s ease forwards;}
+@keyframes highlightPulse{
+  0%{background:rgba(0,180,255,0.14);border-color:rgba(0,180,255,0.45);}
+  100%{background:rgba(255,255,255,0.02);border-color:var(--border);}
+}
+
+/* ═══════════════════════════════════════════════════
+   PROJECT TABLE
+═══════════════════════════════════════════════════ */
+.proj-table{width:100%;border-collapse:collapse;}
+.proj-table th{
+  text-align:left;padding:8px 12px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+.proj-table td{
+  padding:9px 12px;font-size:12px;color:var(--text);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  vertical-align:middle;
+}
+.proj-table tr:hover td{background:rgba(0,180,255,0.03);}
+.proj-table tr:last-child td{border-bottom:none;}
+.proj-table tr{cursor:pointer;}
+
+.proj-name{font-weight:600;color:#fff;font-size:13px;}
+.proj-client{font-size:10px;color:var(--text2);margin-top:1px;}
+
+.risk-chip{
+  padding:3px 7px;border-radius:4px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;
+  text-transform:uppercase;
+}
+.risk-high{background:rgba(255,61,90,0.14);color:var(--danger);}
+.risk-medium{background:rgba(255,176,32,0.14);color:var(--warn);}
+.risk-low{background:rgba(0,255,163,0.14);color:var(--accent2);}
+
+.prog-track{
+  width:72px;height:5px;background:rgba(255,255,255,0.07);
+  border-radius:3px;overflow:hidden;
+}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.8s ease;}
+
+.ai-score{
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:4px;}
+.ftab{
+  padding:4px 11px;border-radius:5px;border:none;
+  background:transparent;font-size:11px;font-weight:500;
+  color:var(--text2);transition:all 0.18s;cursor:pointer;
+}
+.ftab:hover{color:var(--accent);background:rgba(0,180,255,0.07);}
+.ftab.active{
+  background:rgba(0,180,255,0.10);color:var(--accent);
+  border:1px solid rgba(0,180,255,0.2);
+}
+
+/* ═══════════════════════════════════════════════════
+   AGENT STATUS CARDS
+═══════════════════════════════════════════════════ */
+.agent-card{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);border-radius:var(--radius);
+  transition:all 0.2s;margin-bottom:7px;
+}
+.agent-card:last-child{margin-bottom:0;}
+.agent-card:hover{background:rgba(0,180,255,0.04);}
+.agent-emoji{
+  width:34px;height:34px;border-radius:7px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  background:rgba(0,180,255,0.08);border:1px solid var(--border);
+}
+.agent-info{flex:1;min-width:0;}
+.agent-name{font-size:12px;font-weight:600;color:#fff;}
+.agent-task{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.agent-bar{width:56px;height:3px;background:rgba(255,255,255,0.07);border-radius:2px;margin-top:5px;}
+.agent-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.status-active{background:var(--accent2);box-shadow:0 0 8px rgba(0,255,163,0.5);animation:livePulse 2s infinite;}
+.status-busy{background:var(--warn);box-shadow:0 0 8px rgba(255,176,32,0.4);}
+.status-idle{background:var(--muted);}
+
+/* ═══════════════════════════════════════════════════
+   RESOURCE BARS
+═══════════════════════════════════════════════════ */
+.resource-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.res-item{}
+.res-label{
+  display:flex;justify-content:space-between;
+  font-size:11px;color:var(--text2);margin-bottom:5px;
+}
+.res-label span:last-child{color:#fff;font-weight:600;font-family:'JetBrains Mono',monospace;font-size:11px;}
+.res-track{
+  height:7px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;
+}
+.res-fill{height:100%;border-radius:4px;position:relative;transition:width 1s ease;}
+.res-fill::after{
+  content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);
+  width:3px;height:11px;border-radius:2px;background:inherit;filter:brightness(1.8);
+}
+
+/* ═══════════════════════════════════════════════════
+   FINANCIAL IMPACT
+═══════════════════════════════════════════════════ */
+.fin-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid var(--border);
+}
+.fin-row:last-child{border-bottom:none;}
+.fin-label{font-size:12px;color:var(--text);}
+.fin-sub{font-size:10px;color:var(--text2);margin-top:1px;}
+.fin-amount{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;}
+.fin-save{color:var(--accent2);}
+.fin-loss{color:var(--danger);}
+.fin-total{
+  padding:10px 16px;
+  background:rgba(0,255,163,0.05);border-radius:0 0 12px 12px;
+  margin:0 -18px -18px;border-top:1px solid rgba(0,255,163,0.15);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.fin-total-label{font-size:13px;font-weight:600;color:#fff;}
+.fin-total-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--accent2);}
+
+/* ═══════════════════════════════════════════════════
+   RECOMMENDATIONS
+═══════════════════════════════════════════════════ */
+.rec-card{
+  padding:13px;background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);border-radius:var(--radius);
+  border-left:3px solid var(--rc,var(--accent));
+  transition:all 0.2s;margin-bottom:8px;
+}
+.rec-card:last-child{margin-bottom:0;}
+.rec-card:hover{background:rgba(0,180,255,0.04);transform:translateX(2px);}
+.rec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.rec-title{font-size:12px;font-weight:600;color:#fff;}
+.rec-impact{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent2);}
+.rec-desc{font-size:11px;color:var(--text2);line-height:1.5;}
+.rec-tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;}
+.rec-tag{
+  padding:2px 6px;border-radius:3px;
+  font-size:9px;font-family:'JetBrains Mono',monospace;
+  background:rgba(255,255,255,0.05);color:var(--muted);letter-spacing:0.3px;
+}
+.rec-actions{display:flex;gap:6px;margin-top:8px;}
+
+/* ═══════════════════════════════════════════════════
+   COMPLIANCE DONUT
+═══════════════════════════════════════════════════ */
+.compliance-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 16px;}
+.donut-ring{position:relative;width:130px;height:130px;}
+.donut-svg{transform:rotate(-90deg);}
+.donut-lbl{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.donut-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:#fff;}
+.donut-sub{font-size:10px;color:var(--text2);}
+.comp-list{width:100%;margin-top:14px;}
+.comp-item{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.comp-item:last-child{border-bottom:none;}
+.comp-name{color:var(--text2);}
+.comp-score{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;}
+
+/* ═══════════════════════════════════════════════════
+   TIMELINE
+═══════════════════════════════════════════════════ */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:12px;padding-bottom:14px;position:relative;}
+.tl-item:not(:last-child)::before{
+  content:'';position:absolute;left:6px;top:14px;bottom:0;
+  width:1px;background:var(--border);
+}
+.tl-dot{
+  width:13px;height:13px;border-radius:50%;flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;
+}
+.tl-inner{width:6px;height:6px;border-radius:50%;}
+.tl-body{flex:1;}
+.tl-title{font-size:12px;font-weight:600;color:#fff;}
+.tl-desc{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.4;}
+.tl-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
+
+/* ═══════════════════════════════════════════════════
+   SVG CHART
+═══════════════════════════════════════════════════ */
+.chart-tooltip{
+  position:absolute;padding:7px 10px;
+  background:rgba(4,12,24,0.95);border:1px solid var(--border2);
+  border-radius:6px;font-size:11px;color:var(--text);
+  pointer-events:none;display:none;z-index:100;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ═══════════════════════════════════════════════════
+   DETAIL MODAL
+═══════════════════════════════════════════════════ */
+.modal-overlay{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(4,12,24,0.85);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:var(--radius-lg);width:100%;max-width:680px;
+  max-height:80vh;overflow-y:auto;
+  box-shadow:0 40px 100px rgba(0,0,0,0.7);
+  animation:modalIn 0.3s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(0.95) translateY(16px);}to{opacity:1;transform:none;}}
+.modal-head{
+  padding:18px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--panel);z-index:1;
+}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;}
+.modal-close{
+  width:28px;height:28px;border-radius:6px;border:none;
+  background:rgba(255,255,255,0.06);color:var(--text);
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.18s;
+}
+.modal-close:hover{background:rgba(255,61,90,0.15);color:var(--danger);}
+.modal-body{padding:22px;}
+
+/* ── Modal stat row ── */
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.modal-stat{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:var(--radius);padding:12px;text-align:center;
+}
+.modal-stat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;}
+.modal-stat-lbl{font-size:10px;color:var(--text2);margin-top:2px;}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+.toast-container{
+  position:fixed;bottom:22px;right:22px;z-index:999;
+  display:flex;flex-direction:column;gap:7px;
+}
+.toast{
+  padding:11px 16px;
+  background:var(--panel2);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:var(--radius);
+  font-size:12px;color:var(--text);min-width:260px;max-width:340px;
+  box-shadow:0 8px 30px rgba(0,0,0,0.5);
+  display:flex;align-items:center;gap:8px;
+  animation:toastIn 0.3s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px);}to{opacity:1;transform:none;}}
+.toast.fadeout{opacity:0;transform:translateX(16px);transition:all 0.3s;}
+.toast-icon{font-size:14px;flex-shrink:0;}
+.toast-msg{flex:1;}
+
+/* ═══════════════════════════════════════════════════
+   ADD PROJECT FORM
+═══════════════════════════════════════════════════ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-label{font-size:11px;color:var(--text2);font-weight:500;letter-spacing:0.4px;}
+.form-input, .form-select, .form-textarea{
+  padding:9px 12px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:var(--radius);
+  color:#fff;font-size:13px;transition:all 0.18s;outline:none;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{
+  border-color:var(--accent);background:rgba(0,180,255,0.05);
+  box-shadow:0 0 0 3px rgba(0,180,255,0.08);
+}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--muted);}
+.form-select option{background:var(--panel);}
+.form-textarea{resize:vertical;min-height:80px;}
+.form-full{grid-column:1/-1;}
+
+/* ═══════════════════════════════════════════════════
+   PAGE VIEWS
+═══════════════════════════════════════════════════ */
+.page-view{display:none;}
+.page-view.active{display:block;}
+
+/* ═══════════════════════════════════════════════════
+   LOADING SPINNER
+═══════════════════════════════════════════════════ */
+.spinner{
+  width:22px;height:22px;border-radius:50%;
+  border:2px solid rgba(0,180,255,0.15);
+  border-top-color:var(--accent);
+  animation:spin 0.8s linear infinite;display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.loading-overlay{
+  position:fixed;inset:0;z-index:999;
+  background:rgba(4,12,24,0.7);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;
+}
+.loading-overlay.show{display:flex;}
+
+/* ═══════════════════════════════════════════════════
+   RESOURCES TABLE (extended view)
+═══════════════════════════════════════════════════ */
+.table-wrap{overflow-x:auto;}
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{
+  text-align:left;padding:9px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted);text-transform:uppercase;letter-spacing:1px;
+  border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;
+  background:var(--panel);z-index:1;
+}
+.data-table td{
+  padding:10px 14px;font-size:12px;color:var(--text);
+  border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;
+}
+.data-table tr:hover td{background:rgba(0,180,255,0.03);}
+.data-table tr{cursor:pointer;}
+.data-table tr:last-child td{border-bottom:none;}
+
+.attrition-bar{
+  width:56px;height:5px;background:rgba(255,255,255,0.07);
+  border-radius:3px;overflow:hidden;
+}
+.attrition-fill{height:100%;border-radius:3px;}
+
+.skill-tags{display:flex;flex-wrap:wrap;gap:3px;}
+.skill-tag{
+  padding:2px 6px;border-radius:3px;
+  font-size:9px;font-family:'JetBrains Mono',monospace;
+  background:rgba(0,180,255,0.08);color:var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════
+   ANALYTICS CHARTS PAGE
+═══════════════════════════════════════════════════ */
+.chart-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px;
+}
+.chart-title{
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  color:#fff;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;
+}
+
+/* ═══════════════════════════════════════════════════
+   SEARCH BAR
+═══════════════════════════════════════════════════ */
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:7px 12px;transition:all 0.18s;
+}
+.search-bar:focus-within{border-color:var(--accent);background:rgba(0,180,255,0.04);}
+.search-bar input{
+  background:transparent;border:none;outline:none;
+  color:#fff;font-size:13px;flex:1;
+}
+.search-bar input::placeholder{color:var(--muted);}
+.search-bar svg{color:var(--text2);flex-shrink:0;}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════════ */
+@media(max-width:1300px){
+  .kpi-row{grid-template-columns:repeat(3,1fr);}
+  .grid-3,.grid-3r{grid-template-columns:1fr 1fr;}
+  .grid-3eq{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .grid-3,.grid-3r,.grid-3eq,.grid-2{grid-template-columns:1fr;}
+  .nav-tabs{display:none;}
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     LOGIN PAGE
+════════════════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">SO</div>
+      <div class="login-title">TCS SmartOps Platform</div>
+      <div class="login-sub">Agentic AI · Enterprise Intelligence</div>
+    </div>
+    <div class="login-hint">
+      Demo credentials: <span>admin / admin123</span> · manager / manager123 · analyst / analyst123
+    </div>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="loginUser" type="text" placeholder="Enter username" value="admin">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="loginPass" type="password" placeholder="Enter password" value="admin123">
+    </div>
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     APP SHELL
+════════════════════════════════════════════════ -->
+<div id="appShell">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-logo">SO</div>
+      <div>
+        <div class="nav-brand-text">TCS SmartOps</div>
+        <div class="nav-brand-sub">Intelligence Platform v2.4</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="gotoPage('overview',this)">
+        Overview
+        <span class="tab-badge" id="alertBadge"></span>
+      </button>
+      <button class="nav-tab" onclick="gotoPage('projects',this)">Projects</button>
+      <button class="nav-tab" onclick="gotoPage('resources',this)">Resources</button>
+      <button class="nav-tab" onclick="gotoPage('compliance',this)">Compliance</button>
+      <button class="nav-tab" onclick="gotoPage('analytics',this)">Analytics</button>
+    </div>
+    <div class="nav-right">
+      <div class="ws-badge" id="wsBadge">
+        <div class="ws-dot"></div>
+        <span id="wsLabel">CONNECTING</span>
+      </div>
+      <div class="nav-user" onclick="doLogout()">
+        <div class="nav-avatar" id="userAvatar">A</div>
+        <span class="nav-username" id="userName">Admin</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-lbl">⚡ AI ALERTS</div>
+    <div class="ticker-content" id="ticker">
+      🔴 ALPHA-7 delay risk: 87% confidence · RISKBOT-1 · 3 min ago &nbsp;|&nbsp;
+      🟡 Resource gap: Java architects overloaded (94%) · RESOPTIMIZER &nbsp;|&nbsp;
+      🟢 Barclays SLA auto-recovered · SLABOT-3 · ₹55L penalty avoided &nbsp;|&nbsp;
+      🔵 Cloud rightsizing: ₹38L savings identified in AWS us-east-1 · COSTGUARD &nbsp;|&nbsp;
+      🔴 Attrition signal: 5 senior engineers at high risk · ATTRITIONAI &nbsp;|&nbsp;
+      🟡 SOC2 compliance: 4 items pending review · AUDITBOT
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW PAGE ── -->
+  <div id="page-overview" class="page-view active">
+    <div class="main">
+
+      <!-- Page header -->
+      <div class="page-header">
+        <div>
+          <div class="page-title">Operations Command Center</div>
+          <div class="page-subtitle" id="overviewTime">Live · Updated just now · 6 AI agents active</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAllData()">⟳ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="openModal('addProjectModal')">+ New Project</button>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-row" id="kpiRow">
+        <div class="kpi-card" style="--kc:#00b4ff">
+          <div class="kpi-label">Active Projects</div>
+          <div class="kpi-val" id="kpiTotal">—</div>
+          <div class="kpi-delta up" id="kpiTotalDelta">Loading...</div>
+          <div class="kpi-spark" id="spark1">
+            <div class="kpi-spark-bar" style="height:40%"></div><div class="kpi-spark-bar" style="height:52%"></div>
+            <div class="kpi-spark-bar" style="height:48%"></div><div class="kpi-spark-bar" style="height:65%"></div>
+            <div class="kpi-spark-bar" style="height:70%"></div><div class="kpi-spark-bar" style="height:78%"></div>
+            <div class="kpi-spark-bar" style="height:82%"></div><div class="kpi-spark-bar" style="height:100%"></div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kc:#ff3d5a">
+          <div class="kpi-label">At-Risk Projects</div>
+          <div class="kpi-val" id="kpiAtRisk">—</div>
+          <div class="kpi-delta down" id="kpiAtRiskDelta">Loading...</div>
+          <div class="kpi-spark">
+            <div class="kpi-spark-bar" style="height:80%"></div><div class="kpi-spark-bar" style="height:90%"></div>
+            <div class="kpi-spark-bar" style="height:85%"></div><div class="kpi-spark-bar" style="height:70%"></div>
+            <div class="kpi-spark-bar" style="height:65%"></div><div class="kpi-spark-bar" style="height:60%"></div>
+            <div class="kpi-spark-bar" style="height:50%"></div><div class="kpi-spark-bar" style="height:40%"></div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kc:#00ffa3">
+          <div class="kpi-label">Revenue Protected</div>
+          <div class="kpi-val" id="kpiRevenue">—</div>
+          <div class="kpi-delta up" id="kpiRevenueDelta">Loading...</div>
+          <div class="kpi-spark">
+            <div class="kpi-spark-bar" style="height:30%"></div><div class="kpi-spark-bar" style="height:42%"></div>
+            <div class="kpi-spark-bar" style="height:55%"></div><div class="kpi-spark-bar" style="height:60%"></div>
+            <div class="kpi-spark-bar" style="height:68%"></div><div class="kpi-spark-bar" style="height:74%"></div>
+            <div class="kpi-spark-bar" style="height:85%"></div><div class="kpi-spark-bar" style="height:100%"></div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kc:#ffb020">
+          <div class="kpi-label">Resource Utilization</div>
+          <div class="kpi-val" id="kpiUtil">—</div>
+          <div class="kpi-delta neutral" id="kpiUtilDelta">Loading...</div>
+          <div class="kpi-spark">
+            <div class="kpi-spark-bar" style="height:60%"></div><div class="kpi-spark-bar" style="height:64%"></div>
+            <div class="kpi-spark-bar" style="height:68%"></div><div class="kpi-spark-bar" style="height:70%"></div>
+            <div class="kpi-spark-bar" style="height:74%"></div><div class="kpi-spark-bar" style="height:76%"></div>
+            <div class="kpi-spark-bar" style="height:78%"></div><div class="kpi-spark-bar" style="height:78%"></div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--kc:#a855f7">
+          <div class="kpi-label">SLA Compliance</div>
+          <div class="kpi-val" id="kpiSLA">—</div>
+          <div class="kpi-delta up" id="kpiSLADelta">Loading...</div>
+          <div class="kpi-spark">
+            <div class="kpi-spark-bar" style="height:75%"></div><div class="kpi-spark-bar" style="height:78%"></div>
+            <div class="kpi-spark-bar" style="height:80%"></div><div class="kpi-spark-bar" style="height:85%"></div>
+            <div class="kpi-spark-bar" style="height:88%"></div><div class="kpi-spark-bar" style="height:90%"></div>
+            <div class="kpi-spark-bar" style="height:93%"></div><div class="kpi-spark-bar" style="height:100%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 1: Feed | Project Table | Agents -->
+      <div class="grid-3">
+        <!-- AI Agent Feed -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(0,180,255,0.1)">🤖</div>
+              AI Agent Live Feed
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span class="badge badge-blue">AGENTIC</span>
+              <button class="btn btn-secondary btn-xs" onclick="simulateAgentEvent()">Simulate</button>
+            </div>
+          </div>
+          <div class="panel-body" style="max-height:330px;overflow-y:auto;padding:12px;">
+            <div class="agent-feed" id="agentFeed">
+              <div style="text-align:center;padding:30px;color:var(--text2);">
+                <div class="spinner"></div>
+                <div style="margin-top:10px;font-size:12px;">Connecting to agents...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project Risk Table -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(255,61,90,0.1)">⚡</div>
+              Project Risk Intelligence
+            </div>
+            <div class="filter-tabs">
+              <button class="ftab active" onclick="filterProjects('all',this)">All</button>
+              <button class="ftab" onclick="filterProjects('high',this)">High</button>
+              <button class="ftab" onclick="filterProjects('medium',this)">Med</button>
+              <button class="ftab" onclick="filterProjects('low',this)">Low</button>
+            </div>
+          </div>
+          <div class="panel-body no-pad" style="max-height:330px;overflow-y:auto;">
+            <table class="proj-table" id="projTable">
+              <thead>
+                <tr>
+                  <th>Project</th><th>Risk</th><th>Progress</th><th>AI Score</th><th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="projTableBody">
+                <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text2)"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Agents Status -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(0,255,163,0.1)">⚙️</div>
+              Agent Control
+            </div>
+            <span class="badge badge-green" id="agentRunCount">6 RUNNING</span>
+          </div>
+          <div class="panel-body" id="agentStatusList">
+            <div style="text-align:center;padding:20px;color:var(--text2);font-size:12px">Loading agents...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Financial | Resource | Recommendations -->
+      <div class="grid-3r">
+        <!-- Financial Impact -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(0,255,163,0.1)">💎</div>
+              Financial Impact Today
+            </div>
+            <span class="badge badge-green" id="finTotalBadge">+₹2.4Cr</span>
+          </div>
+          <div class="panel-body" id="financialPanel">
+            <div style="text-align:center;padding:20px;color:var(--text2);font-size:12px">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Resource Allocation -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(255,176,32,0.1)">📊</div>
+              Resource Allocation Intelligence
+            </div>
+            <span class="badge badge-warn" id="resBadge">7 GAPS</span>
+          </div>
+          <div class="panel-body">
+            <div class="resource-grid" id="resourceBars">
+              <div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text2);font-size:12px">Loading...</div>
+            </div>
+            <div style="margin-top:14px;padding:10px 12px;background:rgba(255,61,90,0.06);border:1px solid rgba(255,61,90,0.15);border-radius:8px;">
+              <div style="font-size:12px;color:#fff;font-weight:600;">🤖 AI Insight</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:4px;">Java & GenAI critically overloaded. Recommend fast-tracking 8 upskilling + 3 lateral hires.</div>
+              <button class="btn btn-primary btn-xs" style="margin-top:8px;" onclick="showToast('Upskilling plan submitted to L&D portal ✓','success')">Submit to L&D →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(168,85,247,0.1)">✨</div>
+              AI Recommendations
+            </div>
+            <span class="badge badge-purple" id="recBadge">5 QUEUED</span>
+          </div>
+          <div class="panel-body" style="max-height:370px;overflow-y:auto;" id="recPanel">
+            <div style="text-align:center;padding:20px;color:var(--text2);font-size:12px">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Compliance | Timeline | Forecast chart -->
+      <div class="grid-3eq">
+        <!-- Compliance -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(168,85,247,0.1)">🔐</div>
+              Compliance & Audit
+            </div>
+            <span class="badge badge-green">96.4% OK</span>
+          </div>
+          <div class="panel-body" id="compliancePanel">
+            <div class="compliance-wrap">
+              <div class="donut-ring">
+                <svg class="donut-svg" viewBox="0 0 120 120" width="130" height="130">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#00ffa3" stroke-width="12"
+                    stroke-dasharray="284 314" stroke-dashoffset="0" stroke-linecap="round"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#ffb020" stroke-width="12"
+                    stroke-dasharray="19 314" stroke-dashoffset="-284" stroke-linecap="round"/>
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#ff3d5a" stroke-width="12"
+                    stroke-dasharray="11 314" stroke-dashoffset="-303" stroke-linecap="round"/>
+                </svg>
+                <div class="donut-lbl">
+                  <div class="donut-val">96.4</div>
+                  <div class="donut-sub">% compliant</div>
+                </div>
+              </div>
+              <div class="comp-list" id="complianceList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Timeline -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(0,180,255,0.1)">📅</div>
+              Upcoming Deliverables
+            </div>
+            <span class="badge badge-blue">NEXT 14 DAYS</span>
+          </div>
+          <div class="panel-body" id="timelinePanel">
+            <div style="text-align:center;padding:20px;color:var(--text2);font-size:12px">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Forecast chart -->
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">
+              <div class="panel-icon" style="background:rgba(255,107,53,0.1)">📈</div>
+              Predictive Delivery Forecast
+            </div>
+            <span class="badge badge-orange">30-DAY AI</span>
+          </div>
+          <div class="panel-body">
+            <svg id="forecastChart" width="100%" height="150" viewBox="0 0 300 150">
+              <defs>
+                <linearGradient id="ga" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00b4ff" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#00b4ff" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="gb" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ff6b35" stop-opacity="0.18"/>
+                  <stop offset="100%" stop-color="#ff6b35" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="37" x2="300" y2="37" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+              <line x1="0" y1="74" x2="300" y2="74" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+              <line x1="0" y1="111" x2="300" y2="111" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+              <path d="M10,110 L55,90 L100,96 L145,72 L190,65 L200,52 Z" fill="url(#ga)"/>
+              <path d="M10,110 L55,90 L100,96 L145,72 L190,65 L200,52" fill="none" stroke="#00b4ff" stroke-width="2"/>
+              <path d="M200,52 L230,40 L260,32 L295,22 Z" fill="url(#gb)"/>
+              <path d="M200,52 L230,40 L260,32 L295,22" fill="none" stroke="#ff6b35" stroke-width="2" stroke-dasharray="5,3"/>
+              <circle cx="10" cy="110" r="3" fill="#00b4ff"/><circle cx="55" cy="90" r="3" fill="#00b4ff"/>
+              <circle cx="100" cy="96" r="3" fill="#00b4ff"/><circle cx="145" cy="72" r="3" fill="#00b4ff"/>
+              <circle cx="190" cy="65" r="3" fill="#00b4ff"/>
+              <circle cx="200" cy="52" r="4" fill="#00b4ff" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+              <circle cx="230" cy="40" r="3" fill="#ff6b35" opacity="0.75"/>
+              <circle cx="260" cy="32" r="3" fill="#ff6b35" opacity="0.75"/>
+              <circle cx="295" cy="22" r="3" fill="#ff6b35" opacity="0.75"/>
+              <line x1="200" y1="8" x2="200" y2="125" stroke="rgba(0,180,255,0.25)" stroke-width="1" stroke-dasharray="4,3"/>
+              <text x="168" y="16" fill="rgba(0,180,255,0.55)" font-size="8" font-family="JetBrains Mono">NOW</text>
+              <text x="4" y="135" fill="rgba(106,144,176,0.6)" font-size="8" font-family="JetBrains Mono">W-5</text>
+              <text x="48" y="135" fill="rgba(106,144,176,0.6)" font-size="8" font-family="JetBrains Mono">W-3</text>
+              <text x="96" y="135" fill="rgba(106,144,176,0.6)" font-size="8" font-family="JetBrains Mono">W-1</text>
+              <text x="185" y="135" fill="rgba(106,144,176,0.6)" font-size="8" font-family="JetBrains Mono">W0</text>
+              <text x="225" y="135" fill="rgba(255,107,53,0.65)" font-size="8" font-family="JetBrains Mono">W+2</text>
+              <text x="260" y="135" fill="rgba(255,107,53,0.65)" font-size="8" font-family="JetBrains Mono">W+4</text>
+            </svg>
+            <div style="display:flex;gap:14px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2)">
+                <div style="width:16px;height:2px;background:#00b4ff;border-radius:1px"></div>Actual
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2)">
+                <div style="width:16px;height:2px;background:#ff6b35;border-radius:1px;border-top:1px dashed #ff6b35"></div>AI Forecast
+              </div>
+            </div>
+            <div style="padding:9px 12px;background:rgba(0,255,163,0.05);border:1px solid rgba(0,255,163,0.14);border-radius:8px;">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent2);margin-bottom:3px">AI PREDICTION</div>
+              <div style="font-size:11px;color:var(--text)">On-time delivery projected to reach <strong style="color:#00ffa3">93.2%</strong> in W+3 — a <strong style="color:#00ffa3">+6.8%</strong> lift if current AI actions are applied.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PROJECTS PAGE ── -->
+  <div id="page-projects" class="page-view">
+    <div class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Project Portfolio</div>
+          <div class="page-subtitle">AI-powered risk intelligence across all active engagements</div>
+        </div>
+        <div class="header-actions">
+          <div class="search-bar" style="width:220px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input id="projSearch" type="text" placeholder="Search projects..." oninput="filterProjSearch(this.value)">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openModal('addProjectModal')">+ Add Project</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">All Projects</div>
+          <div class="filter-tabs">
+            <button class="ftab active" onclick="filterProjPage('all',this)">All</button>
+            <button class="ftab" onclick="filterProjPage('high',this)">High Risk</button>
+            <button class="ftab" onclick="filterProjPage('medium',this)">Medium</button>
+            <button class="ftab" onclick="filterProjPage('low',this)">Low Risk</button>
+            <button class="ftab" onclick="filterProjPage('at_risk',this)">At Risk</button>
+          </div>
+        </div>
+        <div class="table-wrap" style="max-height:calc(100vh - 280px);overflow-y:auto;">
+          <table class="data-table" id="projFullTable">
+            <thead>
+              <tr>
+                <th>Project</th><th>Client</th><th>Risk</th><th>Progress</th>
+                <th>Budget</th><th>Spent</th><th>AI Risk Score</th><th>SLA Risk</th>
+                <th>Team</th><th>Manager</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="projFullBody">
+              <tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text2)"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RESOURCES PAGE ── -->
+  <div id="page-resources" class="page-view">
+    <div class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Resource Intelligence</div>
+          <div class="page-subtitle">Workforce allocation, bench management & attrition radar</div>
+        </div>
+        <div class="header-actions">
+          <div class="search-bar" style="width:220px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input id="resSearch" type="text" placeholder="Search by skill, name..." oninput="filterResSearch(this.value)">
+          </div>
+          <select class="form-select btn-sm" style="width:130px;color:#fff;" onchange="filterResLocation(this.value)">
+            <option value="">All Locations</option>
+            <option>Chennai</option><option>Mumbai</option><option>Bangalore</option>
+            <option>Hyderabad</option><option>Pune</option><option>Delhi</option><option>Kolkata</option>
+          </select>
+        </div>
+      </div>
+      <!-- Bench summary -->
+      <div class="grid-3eq" style="margin-bottom:14px;">
+        <div class="panel" style="--kc:#ff3d5a">
+          <div class="panel-body" style="padding:16px;">
+            <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">On Bench &gt;7 days</div>
+            <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff" id="benchCount">—</div>
+            <div style="font-size:11px;color:var(--danger);margin-top:4px;">Est. cost: <span id="benchCost">—</span>L/month</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-body" style="padding:16px;">
+            <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">High Attrition Risk</div>
+            <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--danger)" id="attritionCount">—</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px;">Needs immediate HR intervention</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-body" style="padding:16px;">
+            <div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Avg Utilization</div>
+            <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--warn)" id="avgUtil2">—</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:4px;">Target: 85%</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">All Resources</div>
+          <div class="filter-tabs">
+            <button class="ftab active" onclick="filterResPage('all',this)">All</button>
+            <button class="ftab" onclick="filterResPage('bench',this)">On Bench</button>
+            <button class="ftab" onclick="filterResPage('attrition',this)">High Attrition</button>
+          </div>
+        </div>
+        <div class="table-wrap" style="max-height:calc(100vh - 380px);overflow-y:auto;">
+          <table class="data-table" id="resFullTable">
+            <thead>
+              <tr>
+                <th>Employee</th><th>Role</th><th>Skills</th><th>Location</th>
+                <th>Utilization</th><th>Bench Days</th><th>Attrition Risk</th>
+                <th>Performance</th><th>Last Promotion</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="resFullBody">
+              <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text2)"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── COMPLIANCE PAGE ── -->
+  <div id="page-compliance" class="page-view">
+    <div class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Compliance & Audit Center</div>
+          <div class="page-subtitle">Real-time regulatory tracking · ISO 27001 · GDPR · SOC2 · PCI-DSS</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadCompliancePage()">⟳ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Compliance report generated ✓','success')">Export Report</button>
+        </div>
+      </div>
+      <div class="grid-2" id="complianceFullGrid">
+        <div style="text-align:center;padding:40px;color:var(--text2);font-size:13px;grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ANALYTICS PAGE ── -->
+  <div id="page-analytics" class="page-view">
+    <div class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Analytics & Predictions</div>
+          <div class="page-subtitle">AI-powered delivery forecasting · financial modelling · risk trends</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAnalyticsPage()">⟳ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="showToast('Analytics report emailed to your inbox ✓','success')">Email Report</button>
+        </div>
+      </div>
+      <div id="analyticsContent">
+        <div style="text-align:center;padding:60px;color:var(--text2);font-size:13px"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /appShell -->
+
+<!-- ═══════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════ -->
+<!-- Add Project Modal -->
+<div class="modal-overlay" id="addProjectModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Add New Project</div>
+      <button class="modal-close" onclick="closeModal('addProjectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Project Name *</label>
+          <input class="form-input" id="pName" placeholder="e.g. LAMBDA-1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Client *</label>
+          <input class="form-input" id="pClient" placeholder="e.g. HDFC Bank">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Budget (₹)</label>
+          <input class="form-input" id="pBudget" type="number" placeholder="10000000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team Size</label>
+          <input class="form-input" id="pTeamSize" type="number" placeholder="10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input class="form-input" id="pStart" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">End Date</label>
+          <input class="form-input" id="pEnd" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project Manager</label>
+          <input class="form-input" id="pManager" placeholder="e.g. Ravi Kumar">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Technology Stack</label>
+          <input class="form-input" id="pTech" placeholder="Java, React, AWS (comma separated)">
+        </div>
+        <div class="form-group form-full">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="pDesc" placeholder="Brief project description..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('addProjectModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitProject()">Create Project →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Project Detail Modal -->
+<div class="modal-overlay" id="projectDetailModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="detailTitle">Project Details</div>
+      <button class="modal-close" onclick="closeModal('projectDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="detailBody">
+      <div style="text-align:center;padding:40px"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner" style="width:36px;height:36px;border-width:3px"></div>
+  <div style="font-size:13px;color:var(--text2)">Loading SmartOps Platform...</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── Config ──────────────────────────────────────────────────────────────────
+const CONFIG = {
+  API_BASE: 'http://localhost:8000/api',
+  WS_BASE:  'ws://localhost:8000/ws',
+  // If backend not running, use DEMO_MODE = true
+  DEMO_MODE: true,
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let STATE = {
+  token: localStorage.getItem('so_token'),
+  user: JSON.parse(localStorage.getItem('so_user') || 'null'),
+  ws: null,
+  wsConnected: false,
+  projects: [],
+  resources: [],
+  agents: [],
+  kpis: {},
+  financial: {},
+  compliance: {},
+  predictions: [],
+  recommendations: [],
+  alertCount: 0,
+  currentPage: 'overview',
+  projFilter: 'all',
+  resFilter: 'all',
+};
+
+// ── Demo Data (fallback when backend not available) ──────────────────────────
+const DEMO = {
+  kpis: {
+    total_projects: 10, at_risk_projects: 6, high_risk_projects: 3,
+    resource_utilization: 78.3, sla_compliance_pct: 96.4,
+    financial_summary: { net_value_generated_today: 2.4 }
+  },
+  projects: [
+    {id:"PRJ001",name:"ALPHA-7",client:"HSBC",risk:"high",progress:42,budget:12500000,spent:7200000,
+     manager:"Ravi Kumar",team_size:18,tech:["Java","Spring Boot","Oracle"],
+     sla_breach_risk:87,delay_days:6,status:"at_risk",
+     ai_risk_analysis:{score:87,confidence:85,budget_burn_rate:57.6,
+       recommended_action:"URGENT: Realign scope & add 3 FTEs immediately"}},
+    {id:"PRJ002",name:"BETA-12",client:"Standard Chartered",risk:"medium",progress:78,budget:8200000,spent:5900000,
+     manager:"Priya Nair",team_size:12,tech:["React","Node.js","MongoDB"],
+     sla_breach_risk:61,delay_days:2,status:"on_track",
+     ai_risk_analysis:{score:61,confidence:82,budget_burn_rate:71.9,
+       recommended_action:"Monitor daily. Review sprint plan. Buffer 2 day delay"}},
+    {id:"PRJ003",name:"GAMMA-3",client:"TCS Internal",risk:"low",progress:95,budget:3100000,spent:2800000,
+     manager:"Suresh Menon",team_size:6,tech:["Python","FastAPI","PostgreSQL"],
+     sla_breach_risk:12,delay_days:0,status:"on_track",
+     ai_risk_analysis:{score:12,confidence:97,budget_burn_rate:90.3,
+       recommended_action:"Project healthy. Continue current execution"}},
+    {id:"PRJ004",name:"DELTA-9",client:"JP Morgan",risk:"medium",progress:34,budget:18700000,spent:5200000,
+     manager:"Anjali Singh",team_size:24,tech:["Microservices","Kafka","AWS"],
+     sla_breach_risk:55,delay_days:4,status:"at_risk",
+     ai_risk_analysis:{score:55,confidence:79,budget_burn_rate:27.8,
+       recommended_action:"Monitor daily. Review sprint plan. Buffer 4 day delay"}},
+    {id:"PRJ005",name:"EPSILON-2",client:"Barclays",risk:"high",progress:61,budget:9800000,spent:7100000,
+     manager:"Rahul Sharma",team_size:15,tech:["Angular","Java","DB2"],
+     sla_breach_risk:79,delay_days:8,status:"at_risk",
+     ai_risk_analysis:{score:79,confidence:88,budget_burn_rate:72.4,
+       recommended_action:"URGENT: Realign scope & add 4 FTEs immediately"}},
+    {id:"PRJ006",name:"ZETA-5",client:"Accenture",risk:"low",progress:88,budget:5400000,spent:4700000,
+     manager:"Deepa Krishnan",team_size:9,tech:["SAP","ABAP","HANA"],
+     sla_breach_risk:18,delay_days:0,status:"on_track",
+     ai_risk_analysis:{score:18,confidence:94,budget_burn_rate:87.0,
+       recommended_action:"Project healthy. Continue current execution"}},
+    {id:"PRJ007",name:"ETA-11",client:"DBS Bank",risk:"medium",progress:52,budget:7600000,spent:3400000,
+     manager:"Vikram Patel",team_size:11,tech:["Python","ML","GCP"],
+     sla_breach_risk:48,delay_days:3,status:"on_track",
+     ai_risk_analysis:{score:48,confidence:76,budget_burn_rate:44.7,
+       recommended_action:"Weekly check-in sufficient. Buffer 3 day delay"}},
+    {id:"PRJ008",name:"THETA-7",client:"Citigroup",risk:"low",progress:71,budget:6200000,spent:4100000,
+     manager:"Meena Iyer",team_size:8,tech:["iOS","Android","React Native"],
+     sla_breach_risk:22,delay_days:0,status:"on_track",
+     ai_risk_analysis:{score:22,confidence:91,budget_burn_rate:66.1,
+       recommended_action:"Project healthy. Continue current execution"}},
+    {id:"PRJ009",name:"IOTA-14",client:"Infosys",risk:"low",progress:33,budget:4100000,spent:1200000,
+     manager:"Arjun Nair",team_size:7,tech:["Azure","DevOps","Terraform"],
+     sla_breach_risk:15,delay_days:0,status:"on_track",
+     ai_risk_analysis:{score:15,confidence:88,budget_burn_rate:29.3,
+       recommended_action:"Project healthy. Continue current execution"}},
+    {id:"PRJ010",name:"KAPPA-3",client:"Wipro",risk:"high",progress:24,budget:11200000,spent:3800000,
+     manager:"Sonal Mehta",team_size:20,tech:["Blockchain","Hyperledger","Node"],
+     sla_breach_risk:83,delay_days:7,status:"at_risk",
+     ai_risk_analysis:{score:83,confidence:86,budget_burn_rate:33.9,
+       recommended_action:"URGENT: Realign scope & add 4 FTEs immediately"}},
+  ],
+  resources: [
+    {id:"TCS-10000",name:"Arun Kumar",role:"Senior Engineer",skills:["Java","Spring Boot"],location:"Chennai",utilization:94,bench_days:0,attrition_risk:62,experience_years:8,last_promotion_months:28,performance_rating:4.1,certifications:3},
+    {id:"TCS-10001",name:"Priya Nair",role:"Lead Engineer",skills:["React","Node.js","AWS"],location:"Mumbai",utilization:87,bench_days:0,attrition_risk:35,experience_years:6,last_promotion_months:14,performance_rating:4.6,certifications:4},
+    {id:"TCS-10002",name:"Suresh Patel",role:"Architect",skills:["Microservices","Kafka","Java"],location:"Bangalore",utilization:45,bench_days:18,attrition_risk:72,experience_years:14,last_promotion_months:36,performance_rating:3.8,certifications:2},
+    {id:"TCS-10003",name:"Deepa Iyer",role:"DevSecOps",skills:["AWS","Kubernetes","DevOps"],location:"Hyderabad",utilization:79,bench_days:0,attrition_risk:28,experience_years:5,last_promotion_months:10,performance_rating:4.4,certifications:5},
+    {id:"TCS-10004",name:"Vikram Singh",role:"Consultant",skills:["ML/AI","Python","GCP"],location:"Pune",utilization:98,bench_days:0,attrition_risk:88,experience_years:10,last_promotion_months:30,performance_rating:4.8,certifications:6},
+    {id:"TCS-10005",name:"Meena Krishnan",role:"Manager",skills:["SAP","ABAP"],location:"Chennai",utilization:65,bench_days:7,attrition_risk:42,experience_years:12,last_promotion_months:18,performance_rating:4.2,certifications:3},
+    {id:"TCS-10006",name:"Rahul Mehta",role:"Developer",skills:["Angular","Java","SQL"],location:"Mumbai",utilization:33,bench_days:24,attrition_risk:79,experience_years:3,last_promotion_months:32,performance_rating:3.5,certifications:1},
+    {id:"TCS-10007",name:"Anjali Sharma",role:"Lead Engineer",skills:["React","AWS","Node.js"],location:"Bangalore",utilization:91,bench_days:0,attrition_risk:55,experience_years:7,last_promotion_months:22,performance_rating:4.3,certifications:3},
+    {id:"TCS-10008",name:"Arjun Nair",role:"Senior Engineer",skills:["Python","FastAPI","PostgreSQL"],location:"Delhi",utilization:71,bench_days:0,attrition_risk:31,experience_years:5,last_promotion_months:12,performance_rating:4.5,certifications:4},
+    {id:"TCS-10009",name:"Sonal Gupta",role:"Analyst",skills:["Testing","SQL"],location:"Kolkata",utilization:28,bench_days:30,attrition_risk:83,experience_years:2,last_promotion_months:20,performance_rating:3.2,certifications:0},
+  ],
+  agents: {
+    agents:[
+      {id:"AGT001",name:"RISKBOT-1",type:"risk",status:"active",tasks_completed_today:47,load_pct:78,last_action:"Flagged ALPHA-7 delay"},
+      {id:"AGT002",name:"RESOPTIMIZER",type:"resource",status:"busy",tasks_completed_today:23,load_pct:92,last_action:"Matched 3 Java engineers"},
+      {id:"AGT003",name:"SLABOT-3",type:"sla",status:"active",tasks_completed_today:15,load_pct:55,last_action:"Defended Barclays SLA"},
+      {id:"AGT004",name:"COSTGUARD",type:"cost",status:"active",tasks_completed_today:31,load_pct:67,last_action:"Found ₹38L cloud savings"},
+      {id:"AGT005",name:"ATTRITIONAI",type:"talent",status:"active",tasks_completed_today:88,load_pct:45,last_action:"Flagged 5 exit risks"},
+      {id:"AGT006",name:"AUDITBOT",type:"compliance",status:"idle",tasks_completed_today:12,load_pct:0,last_action:"Completed SOC2 review"},
+    ],
+    total_actions_today:216,autonomous_resolutions:34
+  },
+  financial: {
+    breakdown:[
+      {category:"SLA Penalty Avoided",amount_lakh:82,type:"saving",agent:"SLABOT-3"},
+      {category:"Resource Optimization",amount_lakh:47,type:"saving",agent:"RESOPTIMIZER"},
+      {category:"Cloud Cost Reduction",amount_lakh:38,type:"saving",agent:"COSTGUARD"},
+      {category:"Attrition Prevention",amount_lakh:24,type:"saving",agent:"ATTRITIONAI"},
+      {category:"Scope Creep Blocked",amount_lakh:19,type:"saving",agent:"RISKBOT-1"},
+      {category:"Bench Cost (loss)",amount_lakh:-22,type:"loss",agent:"RESOPTIMIZER"},
+    ],
+    total_saving_lakh:210,total_loss_lakh:22,net_lakh:188
+  },
+  compliance: {
+    overall_score:96.4,
+    frameworks:[
+      {name:"ISO 27001",score:100.0,status:"compliant",last_audit:"2025-01-15"},
+      {name:"GDPR / Data Privacy",score:98.2,status:"compliant",last_audit:"2025-02-01"},
+      {name:"SOC2 Type II",score:94.1,status:"review_needed",last_audit:"2025-01-20",open_items:3},
+      {name:"PCI-DSS",score:91.7,status:"review_needed",last_audit:"2025-01-10",open_items:4},
+      {name:"Internal Audit",score:82.0,status:"pending",pending_items:4},
+    ],
+    upcoming_audits:[
+      {framework:"Q1 Internal Audit",due_date:"2025-03-08",days_remaining:9},
+      {framework:"SOC2 Renewal",due_date:"2025-04-15",days_remaining:47},
+    ]
+  },
+  recommendations: {
+    recommendations:[
+      {id:"REC001",title:"Realign DELTA-9 timeline",category:"project",priority:"critical",
+       impact_lakh:55,agent:"RISKBOT-1",
+       description:"2-week delay predicted with 91% confidence. Redistribute 4 FTEs from completed ZETA-5.",
+       tags:["URGENT","PROJECT","RESOURCE"]},
+      {id:"REC002",title:"Renegotiate Citibank cloud contract",category:"cost",priority:"high",
+       impact_lakh:120,agent:"COSTGUARD",
+       description:"Usage pattern shows 34% over-committed capacity. Contract renewal in 45 days — optimal window.",
+       tags:["COST","CONTRACT"]},
+      {id:"REC003",title:"Automate regression suite — GAMMA",category:"quality",priority:"medium",
+       impact_lakh:28,agent:"RISKBOT-1",
+       description:"68% of manual test cases automatable. Playwright reduces QA effort 40%. ROI in 6 weeks.",
+       tags:["AUTOMATION","QA"]},
+      {id:"REC004",title:"Knowledge transfer: 3 retiring SMEs",category:"risk",priority:"high",
+       impact_lakh:210,agent:"ATTRITIONAI",
+       description:"3 COBOL SMEs retiring in 90 days. 4 legacy projects dependent. Initiate KT now.",
+       tags:["RISK","TALENT","LEGACY"]},
+      {id:"REC005",title:"Fast-track GenAI upskilling",category:"resource",priority:"medium",
+       impact_lakh:45,agent:"RESOPTIMIZER",
+       description:"GenAI skills at 98% utilization. Upskill 15 Java devs in LangChain/RAG in 4 weeks.",
+       tags:["SKILLS","GROWTH"]},
+    ]
+  }
+};
+
+const AGENT_EVENT_POOL = [
+  {type:"risk",severity:"high",agent:"RISKBOT-1",
+   message:"ALPHA-7: Database migration sprint blocked. 87% delay probability. Realignment recommended.",
+   impact:"₹42L protected",color:"#ff3d5a"},
+  {type:"resource",severity:"medium",agent:"RESOPTIMIZER",
+   message:"3 Java architects on bench in Chennai matched to DELTA-9. Auto-match score: 94%. Awaiting approval.",
+   impact:"₹18L saved",color:"#ffb020"},
+  {type:"sla",severity:"high",agent:"SLABOT-3",
+   message:"Barclays T-2h SLA alert. Incident #4821 escalated. 2 engineers deployed from standby pool.",
+   impact:"₹55L penalty avoided",color:"#00ffa3"},
+  {type:"cost",severity:"medium",agent:"COSTGUARD",
+   message:"47 idle EC2 instances detected in AWS us-east-1. Rightsizing scheduled for next maintenance window.",
+   impact:"₹38L/quarter",color:"#a855f7"},
+  {type:"attrition",severity:"high",agent:"ATTRITIONAI",
+   message:"TCS-10004 (Senior Architect): LinkedIn activity +340% this week. Exit probability surged to 91%.",
+   impact:"₹25L replacement risk",color:"#ff6b35"},
+  {type:"compliance",severity:"medium",agent:"AUDITBOT",
+   message:"SOC2 CC6.1: Access review overdue 8 days for 12 service accounts. Auto-remediation initiated.",
+   impact:"Audit risk reduced",color:"#00b4ff"},
+  {type:"resource",severity:"low",agent:"RESOPTIMIZER",
+   message:"Upskilling opportunity: 8 Java engineers can be cross-trained to Spring Boot Cloud in 3 weeks.",
+   impact:"Capacity +15%",color:"#00ffa3"},
+  {type:"risk",severity:"high",agent:"RISKBOT-1",
+   message:"KAPPA-3: Blockchain PoC velocity down 40%. Client escalation risk detected for next week.",
+   impact:"₹22L at risk",color:"#ff3d5a"},
+];
+
+let agentEventIdx = 0;
+
+// ── API Helper ────────────────────────────────────────────────────────────────
+async function api(endpoint, opts={}) {
+  if (CONFIG.DEMO_MODE) return null;
+  const headers = {'Content-Type':'application/json'};
+  if (STATE.token) headers['Authorization'] = `Bearer ${STATE.token}`;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE}${endpoint}`, {...opts, headers});
+    if (res.status === 401) { doLogout(); return null; }
+    return await res.json();
+  } catch(e) {
+    console.warn('API call failed (demo mode active):', endpoint);
+    return null;
+  }
+}
+
+// ── WebSocket ─────────────────────────────────────────────────────────────────
+function connectWS() {
+  if (CONFIG.DEMO_MODE) {
+    // Simulate WS connected
+    setTimeout(()=>{ updateWSBadge(true); }, 800);
+    setInterval(simulateAgentEvent, 14000);
+    return;
+  }
+  const cid = `client_${Date.now()}`;
+  const wsUrl = `${CONFIG.WS_BASE}/${cid}?token=${STATE.token}`;
+  try {
+    STATE.ws = new WebSocket(wsUrl);
+    STATE.ws.onopen = ()=>{ updateWSBadge(true); };
+    STATE.ws.onclose = ()=>{ updateWSBadge(false); setTimeout(connectWS, 5000); };
+    STATE.ws.onerror = ()=>{ updateWSBadge(false); };
+    STATE.ws.onmessage = (e)=>{
+      const msg = JSON.parse(e.data);
+      handleWSMessage(msg);
+    };
+    setInterval(()=>{
+      if(STATE.ws && STATE.ws.readyState===1)
+        STATE.ws.send(JSON.stringify({type:'ping'}));
+    }, 25000);
+  } catch(e) {
+    updateWSBadge(false);
+    setTimeout(connectWS, 5000);
+  }
+}
+
+function handleWSMessage(msg) {
+  switch(msg.type) {
+    case 'agent_event': injectAgentEvent(msg.payload); break;
+    case 'project_created': showToast(`New project created: ${msg.payload.name}`,'info'); loadAllData(); break;
+    case 'alert_resolved': showToast(`Alert resolved by ${msg.payload.resolved_by}`,'success'); break;
+    case 'resource_updated': showToast(`Resource ${msg.payload.employee_id} updated`,'info'); break;
+    case 'recommendation_actioned': showToast('Recommendation actioned. AI model updated.','success'); break;
+    default: break;
+  }
+}
+
+function updateWSBadge(connected) {
+  STATE.wsConnected = connected;
+  const badge = document.getElementById('wsBadge');
+  const label = document.getElementById('wsLabel');
+  if (connected) {
+    badge.classList.remove('disconnected');
+    label.textContent = 'LIVE';
+  } else {
+    badge.classList.add('disconnected');
+    label.textContent = 'OFFLINE';
+  }
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  const btn = document.getElementById('loginBtn');
+  const errDiv = document.getElementById('loginError');
+
+  if (!user || !pass) { showLoginError('Please enter username and password.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  errDiv.style.display = 'none';
+
+  if (CONFIG.DEMO_MODE) {
+    // Simple demo auth
+    const creds = {admin:'admin123', manager:'manager123', analyst:'analyst123'};
+    const roles = {admin:{role:'admin',full_name:'Admin User',email:'admin@tcs.com'},
+                   manager:{role:'manager',full_name:'Project Manager',email:'manager@tcs.com'},
+                   analyst:{role:'analyst',full_name:'Data Analyst',email:'analyst@tcs.com'}};
+    if (creds[user] && creds[user]===pass) {
+      STATE.user = {username:user, ...roles[user]};
+      STATE.token = 'demo_token_' + Date.now();
+      localStorage.setItem('so_token', STATE.token);
+      localStorage.setItem('so_user', JSON.stringify(STATE.user));
+      enterApp();
+    } else {
+      btn.disabled = false; btn.textContent = 'Sign In →';
+      showLoginError('Invalid credentials. Try: admin / admin123');
+    }
+    return;
+  }
+
+  // Real API login
+  try {
+    const form = new FormData();
+    form.append('username', user); form.append('password', pass);
+    const res = await fetch(`${CONFIG.API_BASE}/auth/login`, {method:'POST', body:form});
+    if (!res.ok) throw new Error('Invalid');
+    const data = await res.json();
+    STATE.token = data.access_token;
+    STATE.user = data.user;
+    localStorage.setItem('so_token', STATE.token);
+    localStorage.setItem('so_user', JSON.stringify(STATE.user));
+    enterApp();
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    showLoginError('Invalid username or password.');
+  }
+}
+
+function showLoginError(msg) {
+  const e = document.getElementById('loginError');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+function enterApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+  // Set user info
+  const u = STATE.user;
+  document.getElementById('userAvatar').textContent = u.full_name[0].toUpperCase();
+  document.getElementById('userName').textContent = u.full_name.split(' ')[0];
+  // Connect WS & load data
+  connectWS();
+  loadAllData();
+  // Pre-populate feed
+  setTimeout(populateInitialFeed, 800);
+}
+
+function doLogout() {
+  localStorage.removeItem('so_token');
+  localStorage.removeItem('so_user');
+  STATE.token = null; STATE.user = null;
+  if (STATE.ws) STATE.ws.close();
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'Sign In →';
+}
+
+// Check existing session on load
+window.addEventListener('DOMContentLoaded', ()=>{
+  if (STATE.token && STATE.user) {
+    enterApp();
+  }
+  // Allow Enter key on login
+  document.getElementById('loginPass').addEventListener('keyup', e=>{
+    if(e.key==='Enter') doLogin();
+  });
+  document.getElementById('loginUser').addEventListener('keyup', e=>{
+    if(e.key==='Enter') document.getElementById('loginPass').focus();
+  });
+});
+
+// ── Data Loading ──────────────────────────────────────────────────────────────
+async function loadAllData() {
+  updateOverviewTime();
+
+  // KPIs
+  const kpis = await api('/dashboard/kpis') || DEMO.kpis;
+  STATE.kpis = kpis;
+  renderKPIs(kpis);
+
+  // Projects
+  const projData = await api('/projects') || {projects: DEMO.projects};
+  STATE.projects = projData.projects || DEMO.projects;
+  renderProjectTable(STATE.projects);
+  renderFullProjectTable(STATE.projects);
+
+  // Resources
+  const resData = await api('/resources') || {resources: DEMO.resources};
+  STATE.resources = resData.resources || DEMO.resources;
+  renderFullResourceTable(STATE.resources);
+  renderResourceSummary(STATE.resources);
+
+  // Agents
+  const agentData = await api('/agents/status') || DEMO.agents;
+  STATE.agents = agentData.agents || DEMO.agents.agents;
+  renderAgentStatus(agentData);
+
+  // Financial
+  const fin = await api('/analytics/financial-impact') || DEMO.financial;
+  STATE.financial = fin;
+  renderFinancialPanel(fin);
+
+  // Recommendations
+  const rec = await api('/analytics/recommendations') || DEMO.recommendations;
+  STATE.recommendations = rec.recommendations || DEMO.recommendations.recommendations;
+  renderRecommendations(rec.recommendations || STATE.recommendations);
+
+  // Compliance
+  const comp = await api('/analytics/compliance') || DEMO.compliance;
+  STATE.compliance = comp;
+  renderComplianceSummary(comp);
+
+  // Timeline
+  renderTimeline();
+
+  // Resource bars
+  renderResourceBars();
+}
+
+function updateOverviewTime() {
+  document.getElementById('overviewTime').textContent =
+    `Live · Updated ${new Date().toLocaleTimeString()} · 6 AI agents active`;
+}
+
+// ── KPI Rendering ─────────────────────────────────────────────────────────────
+function renderKPIs(d) {
+  document.getElementById('kpiTotal').innerHTML = d.total_projects;
+  document.getElementById('kpiAtRisk').innerHTML = d.at_risk_projects;
+  document.getElementById('kpiRevenue').innerHTML = `₹${(d.financial_summary?.net_value_generated_today||2.4).toFixed(1)}<span class="kpi-unit">Cr</span>`;
+  document.getElementById('kpiUtil').innerHTML = `${d.resource_utilization}<span class="kpi-unit">%</span>`;
+  document.getElementById('kpiSLA').innerHTML = `${d.sla_compliance_pct}<span class="kpi-unit">%</span>`;
+
+  document.getElementById('kpiTotalDelta').textContent = `▲ ${d.total_projects} active engagements`;
+  document.getElementById('kpiAtRiskDelta').textContent = `⚠ ${d.high_risk_projects} critical`;
+  document.getElementById('kpiRevenueDelta').textContent = `▲ AI-protected today`;
+  document.getElementById('kpiUtilDelta').textContent = `Target: 85%`;
+  document.getElementById('kpiSLADelta').textContent = `▲ +2.1% AI-assisted`;
+}
+
+// ── Project Table ─────────────────────────────────────────────────────────────
+const riskColors = {high:'#ff3d5a', medium:'#ffb020', low:'#00ffa3'};
+
+function renderProjectTable(projects, filter='all') {
+  const filtered = filter==='all' ? projects : projects.filter(p=>p.risk===filter);
+  const tbody = document.getElementById('projTableBody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text2);font-size:12px">No projects match filter</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(p => {
+    const score = p.ai_risk_analysis?.score || p.sla_breach_risk || 0;
+    const sc = score>70?'var(--danger)':score>45?'var(--warn)':'var(--accent2)';
+    return `<tr onclick="openProjectDetail('${p.id}')">
+      <td><div class="proj-name">${p.name}</div><div class="proj-client">${p.client}</div></td>
+      <td><span class="risk-chip risk-${p.risk}">${p.risk.toUpperCase()}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <div class="prog-track"><div class="prog-fill" style="width:${p.progress}%;background:${riskColors[p.risk]||'var(--accent)'}"></div></div>
+          <span style="font-size:10px;color:var(--text2);font-family:'JetBrains Mono',monospace;">${p.progress}%</span>
+        </div>
+      </td>
+      <td><span class="ai-score" style="color:${sc}">${score}%</span></td>
+      <td><button class="ea-btn ea-accept" onclick="event.stopPropagation();aiFixProject('${p.id}','${p.name}')">AI Fix</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterProjects(f, btn) {
+  document.querySelectorAll('#page-overview .filter-tabs .ftab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderProjectTable(STATE.projects, f);
+}
+
+function renderFullProjectTable(projects, filter='all', search='') {
+  let data = filter==='all' ? projects : projects.filter(p=>p.risk===filter || p.status===filter);
+  if (search) data = data.filter(p=>
+    p.name.toLowerCase().includes(search) || p.client.toLowerCase().includes(search) ||
+    (p.tech||[]).some(t=>t.toLowerCase().includes(search))
+  );
+  const tbody = document.getElementById('projFullBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--text2)">No projects found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(p => {
+    const score = p.ai_risk_analysis?.score||p.sla_breach_risk||0;
+    const sc = score>70?'var(--danger)':score>45?'var(--warn)':'var(--accent2)';
+    const budgetCr = (p.budget/10000000).toFixed(1);
+    const spentCr = (p.spent/10000000).toFixed(1);
+    return `<tr onclick="openProjectDetail('${p.id}')">
+      <td><div class="proj-name">${p.name}</div></td>
+      <td style="color:var(--text2);font-size:11px;">${p.client}</td>
+      <td><span class="risk-chip risk-${p.risk}">${p.risk}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="prog-track"><div class="prog-fill" style="width:${p.progress}%;background:${riskColors[p.risk]||'#00b4ff'}"></div></div>
+          <span style="font-size:10px;color:var(--text2)">${p.progress}%</span>
+        </div>
+      </td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">₹${budgetCr}Cr</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${p.spent/p.budget>0.85?'var(--danger)':'var(--text2)'}">₹${spentCr}Cr</td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:${sc}">${score}%</span></td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${p.sla_breach_risk>70?'var(--danger)':p.sla_breach_risk>45?'var(--warn)':'var(--accent2)'}">${p.sla_breach_risk}%</span></td>
+      <td style="font-size:11px;color:var(--text2)">${p.team_size}</td>
+      <td style="font-size:11px;color:var(--text2)">${p.manager}</td>
+      <td>
+        <button class="ea-btn ea-accept" onclick="event.stopPropagation();aiFixProject('${p.id}','${p.name}')">Fix</button>
+        <button class="ea-btn ea-dismiss" style="margin-left:4px" onclick="event.stopPropagation();openProjectDetail('${p.id}')">Detail</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterProjPage(f, btn) {
+  document.querySelectorAll('#page-projects .filter-tabs .ftab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderFullProjectTable(STATE.projects, f, document.getElementById('projSearch').value);
+}
+
+function filterProjSearch(v) {
+  renderFullProjectTable(STATE.projects, 'all', v.toLowerCase());
+}
+
+function aiFixProject(id, name) {
+  showToast(`🤖 RISKBOT-1 queued AI remediation for ${name}`, 'success');
+  STATE.alertCount = Math.max(0, STATE.alertCount - 1);
+}
+
+// ── Project Detail Modal ───────────────────────────────────────────────────────
+async function openProjectDetail(id) {
+  openModal('projectDetailModal');
+  const data = STATE.projects.find(p=>p.id===id);
+  if (!data) return;
+  document.getElementById('detailTitle').textContent = `${data.name} — ${data.client}`;
+  const score = data.ai_risk_analysis?.score||data.sla_breach_risk||0;
+  const sc = score>70?'var(--danger)':score>45?'var(--warn)':'var(--accent2)';
+  const budgetPct = Math.round(data.spent/data.budget*100);
+  document.getElementById('detailBody').innerHTML = `
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-val" style="color:${sc}">${score}%</div>
+        <div class="modal-stat-lbl">AI Risk Score</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val">${data.progress}%</div>
+        <div class="modal-stat-lbl">Completion</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-val" style="color:${budgetPct>85?'var(--danger)':'var(--warn)'}">${budgetPct}%</div>
+        <div class="modal-stat-lbl">Budget Burn</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">Progress</div>
+      <div style="height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${data.progress}%;background:${riskColors[data.risk]||'#00b4ff'};border-radius:4px;transition:width 0.8s"></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;font-size:12px;">
+      <div><span style="color:var(--text2)">Client: </span><span style="color:#fff">${data.client}</span></div>
+      <div><span style="color:var(--text2)">Manager: </span><span style="color:#fff">${data.manager}</span></div>
+      <div><span style="color:var(--text2)">Team Size: </span><span style="color:#fff">${data.team_size} engineers</span></div>
+      <div><span style="color:var(--text2)">SLA Risk: </span><span style="color:${sc}">${data.sla_breach_risk}%</span></div>
+      <div><span style="color:var(--text2)">Start: </span><span style="color:#fff">${data.start||'—'}</span></div>
+      <div><span style="color:var(--text2)">End Date: </span><span style="color:#fff">${data.end||'—'}</span></div>
+      <div><span style="color:var(--text2)">Budget: </span><span style="color:#fff">₹${(data.budget/10000000).toFixed(1)}Cr</span></div>
+      <div><span style="color:var(--text2)">Spent: </span><span style="color:${budgetPct>85?'var(--danger)':'#fff'}">₹${(data.spent/10000000).toFixed(1)}Cr (${budgetPct}%)</span></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">Tech Stack</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${(data.tech||[]).map(t=>`<span class="skill-tag">${t}</span>`).join('')}
+      </div>
+    </div>
+
+    <div style="padding:12px;background:rgba(${score>70?'255,61,90':score>45?'255,176,32':'0,255,163'},0.06);border:1px solid rgba(${score>70?'255,61,90':score>45?'255,176,32':'0,255,163'},0.2);border-radius:8px;margin-bottom:16px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent2);margin-bottom:4px">🤖 AI RECOMMENDATION</div>
+      <div style="font-size:12px;color:var(--text)">${data.ai_risk_analysis?.recommended_action||'No recommendation available'}</div>
+      ${data.delay_days>0?`<div style="font-size:11px;color:var(--warn);margin-top:4px">Predicted delay: ${data.delay_days} days</div>`:''}
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary btn-sm" onclick="closeModal('projectDetailModal');showToast('AI remediation plan generated for ${data.name} ✓','success')">Apply AI Fix</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('projectDetailModal');showToast('Escalation sent to PMO ✓','info')">Escalate to PMO</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('projectDetailModal')">Close</button>
+    </div>`;
+}
+
+// ── Resources ─────────────────────────────────────────────────────────────────
+function renderResourceSummary(res) {
+  const bench = res.filter(r=>r.bench_days>7);
+  const attrition = res.filter(r=>r.attrition_risk>70);
+  const avgUtil = Math.round(res.reduce((s,r)=>s+r.utilization,0)/res.length);
+  document.getElementById('benchCount').textContent = bench.length;
+  document.getElementById('benchCost').textContent = (bench.length*5.2).toFixed(1);
+  document.getElementById('attritionCount').textContent = attrition.length;
+  document.getElementById('avgUtil2').textContent = avgUtil+'%';
+}
+
+function renderFullResourceTable(resources, filter='all', search='') {
+  let data = [...resources];
+  if (filter==='bench') data = data.filter(r=>r.bench_days>7);
+  if (filter==='attrition') data = data.filter(r=>r.attrition_risk>70);
+  if (search) data = data.filter(r=>
+    r.name.toLowerCase().includes(search) ||
+    r.id.toLowerCase().includes(search) ||
+    r.skills.some(s=>s.toLowerCase().includes(search)) ||
+    r.location.toLowerCase().includes(search)
+  );
+  const tbody = document.getElementById('resFullBody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--text2)">No resources found</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(r => {
+    const ar = r.attrition_risk||0;
+    const arc = ar>70?'#ff3d5a':ar>45?'#ffb020':'#00ffa3';
+    const uc = r.utilization>90?'var(--danger)':r.utilization>75?'var(--warn)':'var(--accent2)';
+    return `<tr onclick="showToast('Viewing profile: ${r.name}','info')">
+      <td><div style="font-weight:600;color:#fff;font-size:12px">${r.name}</div>
+          <div style="font-size:9px;color:var(--text2);font-family:'JetBrains Mono',monospace">${r.id}</div></td>
+      <td style="font-size:11px;color:var(--text2)">${r.role}</td>
+      <td><div class="skill-tags">${r.skills.map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div></td>
+      <td style="font-size:11px;color:var(--text2)">${r.location}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="attrition-bar"><div class="attrition-fill" style="width:${r.utilization}%;background:${uc}"></div></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${uc}">${r.utilization}%</span>
+        </div>
+      </td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${r.bench_days>14?'var(--danger)':r.bench_days>7?'var(--warn)':'var(--accent2)'}">${r.bench_days}d</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="attrition-bar"><div class="attrition-fill" style="width:${ar}%;background:${arc}"></div></div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${arc}">${ar}%</span>
+        </div>
+      </td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent2)">${r.performance_rating}</td>
+      <td style="font-size:11px;color:${r.last_promotion_months>24?'var(--danger)':'var(--text2)'}">${r.last_promotion_months}mo ago</td>
+      <td>
+        <button class="ea-btn ea-accept" onclick="event.stopPropagation();showToast('HR engagement triggered for ${r.name} ✓','success')">Engage HR</button>
+        ${r.bench_days>7?`<button class="ea-btn ea-dismiss" style="margin-left:3px" onclick="event.stopPropagation();showToast('${r.name} matched to available projects','info')">Match</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function filterResPage(f, btn) {
+  document.querySelectorAll('#page-resources .filter-tabs .ftab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  STATE.resFilter = f;
+  renderFullResourceTable(STATE.resources, f);
+}
+
+function filterResSearch(v) {
+  renderFullResourceTable(STATE.resources, STATE.resFilter, v.toLowerCase());
+}
+
+function filterResLocation(loc) {
+  const res = loc ? STATE.resources.filter(r=>r.location===loc) : STATE.resources;
+  renderFullResourceTable(res, STATE.resFilter);
+}
+
+// ── Agent Status ──────────────────────────────────────────────────────────────
+const agentEmojis = {risk:'🛡️',resource:'👥',sla:'📋',cost:'💰',talent:'🧠',compliance:'📊'};
+const agentTypes = {AGT001:'risk',AGT002:'resource',AGT003:'sla',AGT004:'cost',AGT005:'talent',AGT006:'compliance'};
+
+function renderAgentStatus(agentData) {
+  const agents = agentData?.agents || agentData || STATE.agents;
+  const running = agents.filter(a=>a.status!=='idle').length;
+  document.getElementById('agentRunCount').textContent = running + ' RUNNING';
+
+  const html = agents.map(a => {
+    const type = agentTypes[a.id] || 'risk';
+    const statusClass = a.status==='active'?'status-active':a.status==='busy'?'status-busy':'status-idle';
+    return `<div class="agent-card">
+      <div class="agent-emoji">${agentEmojis[type]||'🤖'}</div>
+      <div class="agent-info">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-task">${a.last_action}</div>
+        <div class="agent-bar"><div class="agent-bar-fill" style="width:${a.load_pct}%"></div></div>
+      </div>
+      <div class="${statusClass} status-dot"></div>
+    </div>`;
+  }).join('');
+  document.getElementById('agentStatusList').innerHTML = html;
+}
+
+// ── Agent Feed ────────────────────────────────────────────────────────────────
+function populateInitialFeed() {
+  const feed = document.getElementById('agentFeed');
+  feed.innerHTML = '';
+  const initial = AGENT_EVENT_POOL.slice(0,5);
+  initial.forEach((ev,i) => {
+    const minutes = [0,4,9,22,60][i];
+    const timeStr = minutes===0?'Just now':`${minutes} min ago`;
+    feed.appendChild(buildEventEl(ev, timeStr, i===0));
+  });
+}
+
+function buildEventEl(ev, timeStr, isNew=false) {
+  const hasAction = ev.type !== 'sla' && ev.type !== 'compliance';
+  const div = document.createElement('div');
+  div.className = 'agent-event' + (isNew?' new-event highlight-event':'');
+  div.innerHTML = `
+    <div class="event-dot" style="background:${ev.color}"></div>
+    <div class="event-body">
+      <div class="event-agent">${ev.agent} · ${ev.type.toUpperCase()}</div>
+      <div class="event-msg">${ev.message}</div>
+      ${hasAction ? `<div class="event-actions">
+        <button class="ea-btn ea-accept" onclick="acceptEvent(this,'${ev.agent}')">✓ Apply</button>
+        <button class="ea-btn ea-dismiss" onclick="dismissEvent(this)">Dismiss</button>
+        <button class="ea-btn ea-escalate" onclick="escalateEvent(this,'${ev.agent}')">↑ Escalate</button>
+      </div>` : ''}
+      <div class="event-meta">
+        <span class="event-time">${timeStr}</span>
+        <span class="event-impact">${ev.impact}</span>
+      </div>
+    </div>`;
+  return div;
+}
+
+function injectAgentEvent(payload) {
+  const ev = payload || AGENT_EVENT_POOL[agentEventIdx % AGENT_EVENT_POOL.length];
+  agentEventIdx++;
+  const feed = document.getElementById('agentFeed');
+  const el = buildEventEl({
+    type: ev.type||'risk',
+    severity: ev.severity||'medium',
+    agent: ev.agent||'RISKBOT-1',
+    message: ev.message||ev.msg||'Agent event detected',
+    impact: ev.impact||'—',
+    color: ev.color || (ev.severity==='high'?'#ff3d5a':ev.severity==='medium'?'#ffb020':'#00ffa3')
+  }, 'Just now', true);
+  feed.insertBefore(el, feed.firstChild);
+  while(feed.children.length > 8) feed.removeChild(feed.lastChild);
+  // Increment alert badge
+  STATE.alertCount++;
+  const badge = document.getElementById('alertBadge');
+  badge.style.display = STATE.alertCount > 0 ? 'block' : 'none';
+  // Update ticker
+  updateTicker(ev.message || ev.msg);
+}
+
+function simulateAgentEvent() {
+  const ev = AGENT_EVENT_POOL[agentEventIdx % AGENT_EVENT_POOL.length];
+  injectAgentEvent(ev);
+}
+
+function updateTicker(msg) {
+  const t = document.getElementById('ticker');
+  t.textContent = '🔴 ' + msg + ' · ' + t.textContent.slice(0,200);
+}
+
+function acceptEvent(btn, agent) {
+  const ev = btn.closest('.agent-event');
+  ev.classList.add('event-resolved');
+  ev.style.borderLeftColor = 'var(--accent2)';
+  btn.parentElement.remove();
+  showToast(`✓ ${agent} action applied successfully`, 'success');
+  STATE.alertCount = Math.max(0, STATE.alertCount-1);
+  api(`/agents/alerts/${Date.now()}/action`, {
+    method:'POST', body:JSON.stringify({alert_id:Date.now().toString(), action:'accept'})
+  });
+}
+
+function dismissEvent(btn) {
+  const ev = btn.closest('.agent-event');
+  ev.style.opacity='0.35'; ev.style.pointerEvents='none';
+  showToast('Alert dismissed', 'info');
+}
+
+function escalateEvent(btn, agent) {
+  const ev = btn.closest('.agent-event');
+  ev.style.borderLeftColor = 'var(--danger)';
+  btn.parentElement.remove();
+  showToast(`↑ Escalated to senior management. Email sent.`, 'warn');
+}
+
+// ── Financial Panel ───────────────────────────────────────────────────────────
+function renderFinancialPanel(fin) {
+  const items = fin.breakdown || fin;
+  const total = fin.net_lakh || fin.total_saving_lakh || 188;
+  document.getElementById('finTotalBadge').textContent = `+₹${(total/100).toFixed(1)}Cr`;
+  let html = items.map(i => `
+    <div class="fin-row">
+      <div>
+        <div class="fin-label">${i.category}</div>
+        <div class="fin-sub">Agent: ${i.agent}</div>
+      </div>
+      <div class="fin-amount ${i.amount_lakh>0?'fin-save':'fin-loss'}">
+        ${i.amount_lakh>0?'+':'-'}₹${Math.abs(i.amount_lakh)}L
+      </div>
+    </div>`).join('');
+  html += `<div class="fin-total">
+    <div class="fin-total-label">Net Value Generated</div>
+    <div class="fin-total-val">+₹${(total/100).toFixed(1)}Cr</div>
+  </div>`;
+  document.getElementById('financialPanel').innerHTML = html;
+}
+
+// ── Resource Bars ─────────────────────────────────────────────────────────────
+const resBarsData = [
+  {label:'Java / Spring',pct:94,color:'linear-gradient(90deg,#ff3d5a,#ffb020)'},
+  {label:'React / Node',pct:87,color:'linear-gradient(90deg,#ffb020,#ffd060)'},
+  {label:'Cloud / AWS',pct:79,color:'linear-gradient(90deg,#00b4ff,#00ffa3)'},
+  {label:'ML / AI / GenAI',pct:98,color:'linear-gradient(90deg,#ff3d5a,#ff6b35)'},
+  {label:'DevSecOps',pct:65,color:'linear-gradient(90deg,#00b4ff,#00ffa3)'},
+  {label:'SAP / ERP',pct:58,color:'linear-gradient(90deg,#3a5570,#6a90b0)'},
+  {label:'QA / Testing',pct:82,color:'linear-gradient(90deg,#00b4ff,#00ffa3)'},
+  {label:'Blockchain',pct:71,color:'linear-gradient(90deg,#a855f7,#00b4ff)'},
+];
+
+function renderResourceBars() {
+  document.getElementById('resourceBars').innerHTML = resBarsData.map(r=>`
+    <div class="res-item">
+      <div class="res-label"><span>${r.label}</span><span>${r.pct}%</span></div>
+      <div class="res-track"><div class="res-fill" style="width:${r.pct}%;background:${r.color}"></div></div>
+    </div>`).join('');
+  const gaps = resBarsData.filter(r=>r.pct>85).length;
+  document.getElementById('resBadge').textContent = gaps + ' OVERLOADED';
+}
+
+// ── Recommendations ───────────────────────────────────────────────────────────
+const recColors = {critical:'#ff3d5a',high:'#ffb020',medium:'#00b4ff',low:'#00ffa3'};
+
+function renderRecommendations(recs) {
+  document.getElementById('recBadge').textContent = recs.length + ' QUEUED';
+  document.getElementById('recPanel').innerHTML = recs.map(r=>`
+    <div class="rec-card" style="--rc:${recColors[r.priority]||'#00b4ff'}">
+      <div class="rec-head">
+        <div class="rec-title">${r.title}</div>
+        <div class="rec-impact">+₹${r.impact_lakh}L</div>
+      </div>
+      <div class="rec-desc">${r.description}</div>
+      <div class="rec-tags">${r.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('')}</div>
+      <div class="rec-actions">
+        <button class="ea-btn ea-accept" onclick="acceptRec('${r.id}',this)">✓ Apply</button>
+        <button class="ea-btn ea-dismiss" onclick="dismissRec(this)">Dismiss</button>
+      </div>
+    </div>`).join('');
+}
+
+function acceptRec(id, btn) {
+  const card = btn.closest('.rec-card');
+  card.style.opacity='0.45'; card.style.pointerEvents='none';
+  card.style.borderLeftColor='var(--accent2)';
+  showToast('Recommendation accepted. Implementation plan queued.','success');
+  api(`/analytics/recommendations/${id}/feedback`,{
+    method:'POST', body:JSON.stringify({rec_id:id,accepted:true})
+  });
+}
+function dismissRec(btn) {
+  const card = btn.closest('.rec-card');
+  card.style.opacity='0.3'; card.style.pointerEvents='none';
+  showToast('Recommendation dismissed','info');
+}
+
+// ── Compliance ────────────────────────────────────────────────────────────────
+function renderComplianceSummary(comp) {
+  const fw = comp.frameworks || [];
+  document.getElementById('complianceList').innerHTML = fw.map(f=>{
+    const c = f.status==='compliant'?'var(--accent2)':f.status==='review_needed'?'var(--warn)':'var(--danger)';
+    const icon = f.status==='compliant'?'✓':f.status==='review_needed'?'⚠':'✗';
+    return `<div class="comp-item">
+      <span class="comp-name">${f.name}</span>
+      <span class="comp-score" style="color:${c}">${icon} ${f.score}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+const TIMELINE_DATA = [
+  {title:"ALPHA-7 Database Migration",desc:"Client: HSBC | Risk: HIGH | AI: 2-day scope split",
+   days:"3 days",color:"#ff3d5a",bg:"rgba(255,61,90,0.12)"},
+  {title:"BETA-12 UAT Sign-off",desc:"Client: Standard Chartered | On-track | Confidence: 82%",
+   days:"6 days",color:"#ffb020",bg:"rgba(255,176,32,0.12)"},
+  {title:"GAMMA-3 Go-Live",desc:"Client: TCS Internal | Ready ✓ | Rollback plan verified",
+   days:"8 days",color:"#00ffa3",bg:"rgba(0,255,163,0.12)"},
+  {title:"Q1 Compliance Audit",desc:"4 items auto-resolved by AUDITBOT | 2 manual reviews needed",
+   days:"11 days",color:"#00b4ff",bg:"rgba(0,180,255,0.12)"},
+  {title:"DELTA-9 Phase-2 Kickoff",desc:"Client: JP Morgan | New phase | Resource plan ready",
+   days:"14 days",color:"#a855f7",bg:"rgba(168,85,247,0.12)"},
+];
+
+function renderTimeline() {
+  document.getElementById('timelinePanel').innerHTML =
+    `<div class="timeline">${
+      TIMELINE_DATA.map((t,i)=>`
+        <div class="tl-item" ${i===TIMELINE_DATA.length-1?'style="padding-bottom:0"':''}>
+          <div class="tl-dot" style="background:${t.bg}">
+            <div class="tl-inner" style="background:${t.color}"></div>
+          </div>
+          <div class="tl-body">
+            <div class="tl-title">${t.title}</div>
+            <div class="tl-desc">${t.desc}</div>
+            <div class="tl-time">Due in ${t.days}</div>
+          </div>
+        </div>`).join('')
+    }</div>`;
+}
+
+// ── Compliance Page ───────────────────────────────────────────────────────────
+async function loadCompliancePage() {
+  const comp = await api('/analytics/compliance') || DEMO.compliance;
+  STATE.compliance = comp;
+  const grid = document.getElementById('complianceFullGrid');
+  const fw = comp.frameworks || [];
+  grid.innerHTML = fw.map(f=>{
+    const c = f.status==='compliant'?'#00ffa3':f.status==='review_needed'?'#ffb020':'#ff3d5a';
+    const pct = f.score;
+    const dash = Math.round(2*Math.PI*45*pct/100);
+    const gap = Math.round(2*Math.PI*45);
+    return `<div class="chart-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff">${f.name}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">Last audit: ${f.last_audit||'—'}</div>
+        </div>
+        <span class="badge ${f.status==='compliant'?'badge-green':f.status==='review_needed'?'badge-warn':'badge-danger'}">
+          ${f.status.replace('_',' ').toUpperCase()}
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <svg viewBox="0 0 100 100" width="90" height="90" style="transform:rotate(-90deg)">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="${c}" stroke-width="10"
+            stroke-dasharray="${dash} ${gap}" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:${c}">${pct}%</div>
+          <div style="font-size:11px;color:var(--text2)">Compliance Score</div>
+          ${f.open_items?`<div style="font-size:11px;color:var(--warn);margin-top:4px">${f.open_items} items pending</div>`:''}
+          ${f.pending_items?`<div style="font-size:11px;color:var(--danger);margin-top:4px">${f.pending_items} pending review</div>`:''}
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:6px;">
+        <button class="btn btn-primary btn-sm btn-xs" onclick="showToast('${f.name} remediation plan generated ✓','success')">Remediate</button>
+        <button class="btn btn-secondary btn-xs" onclick="showToast('${f.name} report exported ✓','info')">Export</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Add upcoming audits section
+  if (comp.upcoming_audits?.length) {
+    grid.innerHTML += `
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Upcoming Audit Schedule</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          ${comp.upcoming_audits.map(a=>`
+            <div style="padding:12px 16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;min-width:200px">
+              <div style="font-size:13px;font-weight:600;color:#fff">${a.framework}</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px">Due: ${a.due_date}</div>
+              <div style="font-size:11px;color:${a.days_remaining<14?'var(--danger)':'var(--warn)'};margin-top:3px">
+                ${a.days_remaining} days remaining
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+}
+
+// ── Analytics Page ────────────────────────────────────────────────────────────
+async function loadAnalyticsPage() {
+  const [preds, fin, trend] = await Promise.all([
+    api('/analytics/predictions') || {predictions: DEMO.projects.map(p=>({
+      project_id:p.id, project_name:p.name, client:p.client,
+      original_end_date:p.end||'2025-04-30',
+      predicted_completion:p.end||'2025-04-30',
+      delay_days:p.delay_days||0, confidence:p.ai_risk_analysis?.confidence||80,
+      risk_score:p.ai_risk_analysis?.score||p.sla_breach_risk||20,
+      recommended_action:p.ai_risk_analysis?.recommended_action||'Continue normally'
+    }))},
+    api('/analytics/financial-impact') || DEMO.financial,
+    api('/analytics/risk-trend') || null,
+  ]);
+
+  const content = document.getElementById('analyticsContent');
+  const predictions = preds.predictions || preds;
+
+  content.innerHTML = `
+    <!-- Prediction Table -->
+    <div class="panel" style="margin-bottom:14px">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="panel-icon" style="background:rgba(0,180,255,0.1)">🔮</div>
+          AI Delivery Predictions (Model Accuracy: 91.4%)
+        </div>
+        <span class="badge badge-blue">ML POWERED</span>
+      </div>
+      <div class="table-wrap" style="max-height:320px;overflow-y:auto">
+        <table class="data-table">
+          <thead><tr>
+            <th>Project</th><th>Client</th><th>Original End</th>
+            <th>AI Predicted</th><th>Delay</th><th>Risk Score</th>
+            <th>Confidence</th><th>AI Recommendation</th>
+          </tr></thead>
+          <tbody>${predictions.map(p=>{
+            const delay = p.delay_days||0;
+            const sc = p.risk_score>70?'var(--danger)':p.risk_score>45?'var(--warn)':'var(--accent2)';
+            return `<tr>
+              <td><div class="proj-name">${p.project_name}</div></td>
+              <td style="font-size:11px;color:var(--text2)">${p.client}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px">${p.original_end_date}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${delay>0?'var(--warn)':'var(--accent2)'}">${p.predicted_completion}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${delay>0?'var(--danger)':'var(--accent2)'}">
+                ${delay>0?'+'+delay+'d':'On time ✓'}
+              </td>
+              <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:${sc}">${p.risk_score}%</span></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent2)">${p.confidence}%</td>
+              <td style="font-size:11px;color:var(--text2);max-width:200px">${p.recommended_action}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid-2">
+      <!-- Risk Trend Chart -->
+      <div class="chart-card">
+        <div class="chart-title">
+          Project Risk Trend (8 weeks actual + 4 weeks forecast)
+          <span class="badge badge-orange">FORECAST</span>
+        </div>
+        <svg width="100%" height="160" viewBox="0 0 400 160">
+          <defs>
+            <linearGradient id="rtg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff3d5a" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#ff3d5a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          ${[0,40,80,120].map(y=>`<line x1="0" y1="${y}" x2="400" y2="${y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`).join('')}
+          <!-- Actual line -->
+          <path d="M15,95 L55,82 L95,90 L135,68 L175,72 L215,58 L255,62 L295,48" fill="none" stroke="#ff3d5a" stroke-width="2"/>
+          <path d="M15,95 L55,82 L95,90 L135,68 L175,72 L215,58 L255,62 L295,48 L295,140 L15,140 Z" fill="url(#rtg)"/>
+          <!-- Forecast dashed -->
+          <path d="M295,48 L325,38 L355,30 L385,20" fill="none" stroke="#ff6b35" stroke-width="2" stroke-dasharray="5,3"/>
+          <!-- Points -->
+          ${[[15,95],[55,82],[95,90],[135,68],[175,72],[215,58],[255,62],[295,48]].map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="${i===7?4:3}" fill="#ff3d5a" ${i===7?'stroke="rgba(255,255,255,0.5)" stroke-width="1.5"':''}/>`).join('')}
+          ${[[325,38],[355,30],[385,20]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="#ff6b35" opacity="0.75"/>`).join('')}
+          <!-- Now marker -->
+          <line x1="295" y1="5" x2="295" y2="150" stroke="rgba(0,180,255,0.25)" stroke-width="1" stroke-dasharray="4,3"/>
+          <!-- Labels -->
+          ${['W-7','W-5','W-3','W-1','W0','W+1','W+2','W+3'].map((l,i)=>`<text x="${15+i*42}" y="155" fill="rgba(106,144,176,0.6)" font-size="8" font-family="JetBrains Mono">${l}</text>`).join('')}
+        </svg>
+        <div style="margin-top:10px;padding:8px 12px;background:rgba(0,255,163,0.05);border-radius:6px;font-size:11px;color:var(--text)">
+          AI predicts risk will drop to <strong style="color:var(--accent2)">32%</strong> by W+3 if all 5 queued recommendations are applied.
+        </div>
+      </div>
+
+      <!-- Financial Waterfall -->
+      <div class="chart-card">
+        <div class="chart-title">
+          Financial Value Generated Today
+          <span class="badge badge-green">+₹${((fin.net_lakh||188)/100).toFixed(1)}Cr NET</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:100px;margin-bottom:10px;padding:0 10px;">
+          ${(fin.breakdown||DEMO.financial.breakdown).map(i=>{
+            const h = Math.abs(i.amount_lakh)/2.1;
+            const c = i.amount_lakh>0?'linear-gradient(to top,#00b4ff,#00ffa3)':'linear-gradient(to top,#ff3d5a,#ff6b35)';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${i.amount_lakh>0?'var(--accent2)':'var(--danger)'}">
+                ${i.amount_lakh>0?'+':''}${i.amount_lakh}L
+              </div>
+              <div style="width:100%;height:${Math.min(h,80)}px;background:${c};border-radius:3px 3px 0 0"></div>
+              <div style="font-size:8px;color:var(--text2);text-align:center;word-break:break-word;max-width:50px;line-height:1.2">${i.category.split(' ')[0]}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="margin-top:8px;padding:8px 12px;background:rgba(0,255,163,0.05);border-radius:6px;font-size:11px;color:var(--text)">
+          Total gross savings: <strong style="color:var(--accent2)">₹${((fin.total_saving_lakh||210)/100).toFixed(1)}Cr</strong> &nbsp;|&nbsp; 
+          Bench cost: <strong style="color:var(--danger)">₹${((fin.total_loss_lakh||22)/100).toFixed(1)}Cr</strong>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Page Navigation ───────────────────────────────────────────────────────────
+function gotoPage(page, tabEl) {
+  document.querySelectorAll('.page-view').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.add('active');
+  tabEl.classList.add('active');
+  STATE.currentPage = page;
+
+  if (page==='projects') renderFullProjectTable(STATE.projects);
+  if (page==='resources') { renderFullResourceTable(STATE.resources); renderResourceSummary(STATE.resources); }
+  if (page==='compliance') loadCompliancePage();
+  if (page==='analytics') loadAnalyticsPage();
+}
+
+// ── Submit New Project ────────────────────────────────────────────────────────
+async function submitProject() {
+  const name = document.getElementById('pName').value.trim();
+  const client = document.getElementById('pClient').value.trim();
+  if (!name || !client) { showToast('Project name and client are required','warn'); return; }
+
+  const payload = {
+    name, client,
+    budget: parseFloat(document.getElementById('pBudget').value)||10000000,
+    start_date: document.getElementById('pStart').value||'2025-03-01',
+    end_date: document.getElementById('pEnd').value||'2025-09-30',
+    manager: document.getElementById('pManager').value||'TBD',
+    team_size: parseInt(document.getElementById('pTeamSize').value)||5,
+    technology_stack: (document.getElementById('pTech').value||'TBD').split(',').map(s=>s.trim()),
+    description: document.getElementById('pDesc').value||''
+  };
+
+  const res = await api('/projects', {method:'POST', body:JSON.stringify(payload)});
+
+  // Add to local state regardless
+  STATE.projects.push({
+    id: `PRJ${String(STATE.projects.length+1).padStart(3,'0')}`,
+    ...payload, progress:0, spent:0, risk:'low', status:'on_track',
+    sla_breach_risk:10, delay_days:0,
+    ai_risk_analysis:{score:10,confidence:95,budget_burn_rate:0,
+      recommended_action:'New project — initializing monitoring'}
+  });
+
+  closeModal('addProjectModal');
+  showToast(`Project ${name} created successfully ✓`, 'success');
+  renderProjectTable(STATE.projects);
+  renderFullProjectTable(STATE.projects);
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// Close on overlay click
+document.addEventListener('click', e=>{
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('open');
+  }
+});
+
+// ── Toast ────────────────────────────────────────────────────────────────────
+const TOAST_ICONS = {success:'✓', info:'ℹ', warn:'⚠', danger:'✗'};
+const TOAST_COLORS = {success:'var(--accent2)', info:'var(--accent)', warn:'var(--warn)', danger:'var(--danger)'};
+
+function showToast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.borderLeftColor = TOAST_COLORS[type] || TOAST_COLORS.info;
+  t.innerHTML = `<span class="toast-icon" style="color:${TOAST_COLORS[type]}">${TOAST_ICONS[type]||'ℹ'}</span>
+    <span class="toast-msg">${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.classList.add('fadeout'); setTimeout(()=>t.remove(),300); }, 4000);
+}
+</script>
+</body>
+</html>
